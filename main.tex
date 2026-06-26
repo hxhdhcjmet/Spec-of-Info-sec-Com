@@ -1,0 +1,49 @@
+\documentclass[UTF8,a4paper,zihao=-4,fontset=fandol]{ctexart}
+
+% ==================== 导入格式设置 ====================
+\input{format/packages.tex}
+\input{format/page_style.tex}
+\input{format/formatting.tex}
+
+\begin{document}
+
+% ==================== 封面 ====================
+\input{content/cover.tex}
+
+% ==================== 填写说明 ====================
+\input{content/instructions.tex}
+
+% ==================== 目录 ====================
+\newpage
+\tableofcontents
+
+% ==================== 正文，从摘要开始计页码 ====================
+\newpage
+
+\input{content/abstract.tex}
+
+\newpage
+\input{content/chapter1.tex}
+
+\newpage
+\input{content/chapter2.tex}
+
+\newpage
+\input{content/chapter3.tex}
+
+\newpage
+\input{content/chapter4.tex}
+
+\newpage
+\input{content/chapter5.tex}
+
+\newpage
+\input{content/chapter6.tex}
+
+\newpage
+\input{content/chapter7.tex}
+
+\newpage
+\input{content/references.tex}
+
+\end{document}
