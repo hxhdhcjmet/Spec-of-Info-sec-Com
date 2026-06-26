@@ -1,0 +1,89 @@
+% !TEX root = ../main.tex
+% ==================== 自定义命令 ====================
+\renewcommand{\contentsname}{目\quad 录}
+\renewcommand{\thesection}{第\chinese{section}章}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\newcommand{\uncheckedbox}{$\square$}
+\newcommand{\checkedbox}{\rlap{$\square$}\raisebox{0.15ex}{\hspace{0.12em}\ding{51}}}
+
+% 若你在 Overleaf 上传了"方正小标宋简体"字体，可在这里改成对应字体名。
+% \IfFontExistsTF{FZXiaoBiaoSong-B05S}
+  % {\newCJKfontfamily\xiaobiaosong{FZXiaoBiaoSong-B05S}}
+  % {\newcommand{\xiaobiaosong}{\songti\bfseries}}
+
+  % 临时使用系统宋体代替
+\newCJKfontfamily\xiaobiaosong{SimSun}
+
+
+% ==================== 标题格式 ====================
+\titleformat{\section}
+  {\centering\heiti\bfseries\zihao{3}}
+  {}
+  {0em}
+  {}
+
+\titleformat{\subsection}
+  {\heiti\bfseries\zihao{4}}
+  {\thesubsection}
+  {1em}
+  {}
+
+\titleformat{\subsubsection}
+  {\heiti\bfseries\zihao{-4}}
+  {\thesubsubsection}
+  {1em}
+  {}
+  
+
+% ==================== 目录格式 ====================
+\titlecontents{section}
+  [0em]
+  {}
+  {\contentslabel{2em}}
+  {}
+  {\titlerule*[0.8pc]{.}\contentspage}
+
+\titlecontents{subsection}
+  [2em]
+  {}
+  {\contentslabel{2.5em}}
+  {}
+  {\titlerule*[0.8pc]{.}\contentspage}
+
+% ==================== 代码环境 ====================
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    columns=flexible,
+    numbers=left,
+    numberstyle=\tiny,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red!70!black},
+    showstringspaces=false
+}
+
+% ==================== 中文章节编号：ctex 官方方式 ====================
+\ctexset{
+  section = {
+    name = {第,章},
+    number = \chinese{section},
+    format = \centering\heiti\bfseries\zihao{3}
+  },
+  subsection = {
+    format = \heiti\bfseries\zihao{4}
+  },
+  subsubsection = {
+    format = \heiti\bfseries\zihao{-4}
+  }
+}
+
+\renewcommand{\thesubsubsection}{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}
+
+% ==================== 原生目录编号宽度调整 ====================
+\makeatletter
+\renewcommand*\l@section{\@dottedtocline{1}{0em}{4.5em}}
+\renewcommand*\l@subsection{\@dottedtocline{2}{2em}{2.5em}}
+\renewcommand*\l@subsubsection{\@dottedtocline{3}{4em}{3.3em}}
+\makeatother
