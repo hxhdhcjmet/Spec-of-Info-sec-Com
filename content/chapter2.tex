@@ -18,9 +18,22 @@ HMAC（Hash-based Message Authentication Code）是一种基于密码杂凑函�
 在 FoodShield 系统中，HMAC 主要用于订单 Token 的生成与验证。用户在创建订单后，平台服务器根据订单号、匿名身份标识、时间戳和随机数等字段生成订单认证 Token。用户进入订单通信通道时需要提交订单号和 Token，服务器重新计算并比对 Token，以判断用户是否为该订单的合法参与方。该机制使用户能够在不直接暴露真实身份的情况下证明自己拥有订单通信资格。
 
 本系统中订单 Token 的抽象形式如下：
+\begin{equation}
+m_{order}
+=
+orderID
+\parallel
+PID
+\parallel
+timestamp
+\parallel
+nonce
+\end{equation}
 
 \begin{equation}
-token=\operatorname{HMAC}*{K*{order}}(orderID \parallel PID \parallel timestamp \parallel nonce)
+\mathrm{token}
+=
+\operatorname{HMAC}(K_{\mathrm{order}},\,m_{\mathrm{order}})
 \end{equation}
 
 其中，$K_{order}$ 为订单认证密钥，$orderID$ 为订单编号，$PID$ 为用户匿名身份标识，$timestamp$ 为时间戳，$nonce$ 为随机数。通过引入时间戳和随机数，可以降低 Token 被重放利用的风险；通过绑定订单号与匿名身份标识，可以防止攻击者将一个订单的认证凭证迁移到其他订单中使用。
@@ -78,7 +91,7 @@ PID（Pseudonymous Identifier）即伪身份标识或匿名身份标识，是隐
 在 FoodShield 系统中，用户注册后由平台服务器生成 PID。PID 可以由主密钥、用户真实标识、随机数和设备摘要等字段通过 HMAC 或哈希机制生成，其抽象形式如下：
 
 \begin{equation}
-PID=\operatorname{HMAC}*{K*{master}}(userID \parallel r)
+PID=\operatorname{HMAC}(K_{master},\,userID \parallel r)
 \end{equation}
 
 其中，$K_{master}$ 为平台主密钥，$userID$ 为用户真实身份标识，$r$ 为随机数。引入随机数可以避免相同用户标识在不同场景下生成完全相同的匿名标识，从而降低跨订单关联风险。
