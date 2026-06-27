@@ -5,7 +5,8 @@
 \renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
 \newcommand{\uncheckedbox}{$\square$}
 \newcommand{\checkedbox}{\rlap{$\square$}\raisebox{0.15ex}{\hspace{0.12em}\ding{51}}}
-
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 % 若你在 Overleaf 上传了"方正小标宋简体"字体，可在这里改成对应字体名。
 % \IfFontExistsTF{FZXiaoBiaoSong-B05S}
   % {\newCJKfontfamily\xiaobiaosong{FZXiaoBiaoSong-B05S}}
