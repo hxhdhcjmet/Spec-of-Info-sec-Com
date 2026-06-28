@@ -1,0 +1,41 @@
+% !TEX root = ../../main.tex
+\subsection{PID 匿名身份生成机制}
+\label{subsec:pid}
+
+\subsubsection*{机制概述}
+
+PID（Pseudo-Identity，伪身份标识）是 FoodShield 系统中用户在通信和日志中的唯一匿名代号。PID 不等同于用户名，也不等同于数据库内部 \texttt{user\_id}，而是通过带密钥的哈希函数对用户标识和随机数进行混淆后得到的不可逆摘要。系统在用户注册完成后自动生成 PID，用户在通信过程中以 PID 作为发送方标识，骑手端和管理员端默认不直接展示 PID 对应的真实身份。
+
+\subsubsection*{生成公式}
+
+PID 的生成公式为：
+\[
+  \mathrm{PID} = \operatorname{HMAC\text{-}SM3}(K_{\mathrm{master}},\; \mathit{userID} \| r)
+\]
+其中：
+\begin{itemize}[leftmargin=2em]
+  \item $K_{\mathrm{master}}$ 为系统主密钥，由服务端统一管理，不对外暴露；
+  \item $\mathit{userID}$ 为该用户在数据库中的内部整数 id（注册时自增分配）；
+  \item $r$ 为 128 位随机数（\texttt{secrets.token\_hex(16)} 生成），每位用户独立随机，与 PID 一同保存于 \texttt{users.pid\_r} 字段；
+  \item $\|$ 表示字符串拼接；
+  \item $\operatorname{HMAC\text{-}SM3}$ 为以 SM3 为底层哈希函数的消息认证码，输出 256 位（64 位十六进制字符串）。
+\end{itemize}
+
+\subsubsection*{生成时机与存储}
+
+PID 在用户首次完成注册时由服务端自动生成，写入 \texttt{users} 表。由于 PID 依赖 \texttt{user\_id}，而 \texttt{user\_id} 在 \texttt{INSERT} 操作完成后才能确定，因此注册流程采用两步写入策略：先插入临时占位 PID，获取自增 \texttt{user\_id} 后再调用 PID 生成函数，将最终 PID 和随机数 $r$ 更新至数据库。
+
+\subsubsection*{可见性策略}
+
+PID 的对外可见性遵循"最小暴露"原则：
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{用户端}：用户仅在登录响应中短暂接收 PID（用于后续订单认证），不在任何普通业务页面长期展示。
+  \item \textbf{骑手端}：骑手端接口响应中不包含 PID 字段，骑手无法通过正常页面获知与其通信的用户 PID。
+  \item \textbf{管理员端}：管理员默认视图仅展示消息哈希和订单摘要，不展示 \texttt{sender\_pid} 的明文值；PID 仅在条件溯源授权流程中被关联至真实用户名。
+  \item \textbf{数据库内部}：\texttt{users.pid\_r}（随机数 $r$）和 \texttt{users.pid} 均保存于服务端数据库，仅服务器进程可访问，不通过 API 直接对外暴露。
+\end{itemize}
+
+\subsubsection*{跨订单不可链接性}
+
+由于每位用户的 PID 由随机数 $r$ 参与生成，不同用户之间的 PID 不存在可预测的关联关系。骑手在多次接单过程中，即使多次与同一用户通信，在缺少 $K_{\mathrm{master}}$ 和 $r$ 的情况下，也无法通过 PID 判断是否为同一用户。HMAC-SM3 的伪随机性确保：在 $K_{\mathrm{master}}$ 保密的前提下，已知 PID 无法还原 $\mathit{userID}$，也无法枚举其他用户的 PID，从而实现跨订单不可链接性。
