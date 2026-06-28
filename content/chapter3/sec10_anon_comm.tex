@@ -1,0 +1,43 @@
+% !TEX root = ../../main.tex
+\subsection{用户端与骑手端匿名通信机制}
+\label{subsec:anon_comm}
+
+\subsubsection*{通信通道设计}
+
+FoodShield 采用基于 Flask-SocketIO 的 WebSocket 通道实现用户端与骑手端之间的实时消息通信。系统以订单号（\texttt{order\_id}）作为通信房间的唯一标识，每个订单对应一个独立的 WebSocket Room，不同订单的通信消息在房间层面实现隔离，互不干扰。
+
+\subsubsection*{入房认证流程}
+
+\textbf{用户端入房}（\texttt{join\_order} 事件）需提交以下字段：
+\[
+  \{\;\mathit{order\_id},\;\mathrm{PID},\;\mathit{timestamp},\;\mathit{token},\;\mathit{role}\;\}
+\]
+服务器按 3.9 节描述的 Token 验证流程完成三重校验（有效期、Token 合法性、订单存在性），验证通过后执行 \texttt{join\_room(order\_id)}，将该 WebSocket 连接加入对应房间，同时广播系统消息通知房间内成员。
+
+\textbf{骑手端入房}（\texttt{join\_order\_as\_rider} 事件）需提交：
+\[
+  \{\;\mathit{order\_id},\;\mathit{role}\;\}
+\]
+骑手端不需要提交 Token，但服务器会检查订单状态，仅当订单处于 \texttt{taken}、\texttt{delivering} 或 \texttt{completed} 状态时，才允许骑手加入对应房间。这一状态约束保证只有已接单的骑手才能进入订单通信通道，避免任意骑手随意侦听订单房间。
+
+\subsubsection*{消息转发与字段最小化}
+
+用户端或骑手端通过 \texttt{send\_message} 事件发送消息时，消息负载包含：
+\[
+  \{\;\mathit{order\_id},\;\mathit{sender\_pid},\;\mathit{role},\;\mathit{content}\;\}
+\]
+服务器在内存中完成以下操作后，再将消息广播至房间：
+
+\begin{enumerate}[label=\arabic*., leftmargin=2em]
+  \item 生成全局唯一 \texttt{msg\_id}（UUID）和 ISO 8601 格式时间戳；
+  \item 调用消息哈希函数计算 \texttt{message\_hash}（详见 3.11 节）；
+  \item 调用 SM4-CBC 对明文 \texttt{content} 加密，将密文写入 \texttt{messages} 表（详见 3.11 节）；
+  \item 触发 Merkle 快照更新，将新的 \texttt{merkle\_root} 附加到广播消息中；
+  \item 通过 \texttt{emit("receive\_message", msg, room=order\_id)} 将消息广播至订单房间内所有成员。
+\end{enumerate}
+
+广播给骑手端的消息中包含 \texttt{sender\_pid} 字段，但骑手端前端界面不展示该字段，骑手仅能看到消息内容和发送方角色（\texttt{user} 或 \texttt{rider}），而无法直接接触 PID 原始值，从而保障用户匿名性。
+
+\subsubsection*{房间隔离与越权防护}
+
+每个订单对应一个独立房间，服务器在处理 \texttt{send\_message} 事件时，还会验证订单号对应的订单是否存在。通信消息只在同一 \texttt{order\_id} 的房间内广播，无法跨订单传播。骑手端和用户端只能通过正常的入房鉴权流程进入自己有资格参与的订单通信房间，无法旁听其他订单的通信内容。

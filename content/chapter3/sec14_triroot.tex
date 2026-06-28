@@ -1,0 +1,40 @@
+% !TEX root = ../../main.tex
+\subsection{三端摘要一致性增强机制}
+\label{subsec:triroot}
+
+\subsubsection*{设计动机}
+
+在标准的 Merkle Tree 完整性验证方案中，Merkle Root 快照保存在服务端数据库（\texttt{audit\_logs} 表）中。若攻击者同时获得数据库写权限，理论上可以在篡改消息内容后同步伪造 \texttt{audit\_logs} 中的快照 Root，使得完整性验证仍然通过。
+
+为提高攻击者同时伪造日志和快照的难度，FoodShield 引入三端摘要一致性增强机制：服务端在每次 Merkle Root 更新后，通过 WebSocket 消息将最新 \texttt{merkle\_root} 推送给订单房间内的用户端和骑手端，前端将其存储于本地（\texttt{localStorage}）；审计时，管理员将三方 Root（服务端快照、用户端上报、骑手端上报）进行三角比对，任一方不一致则触发告警。
+
+\subsubsection*{工作流程}
+
+\begin{enumerate}[label=\arabic*., leftmargin=2em]
+  \item \textbf{Root 随消息广播}：每条消息成功入库后，服务器调用 \texttt{create\_merkle\_snapshot} 生成最新 Root，并将其附加在 \texttt{receive\_message} 事件的响应中推送至房间：
+    \[
+      \mathrm{msg}.\mathit{merkle\_root} \gets \operatorname{MerkleRoot}([h_1, h_2, \ldots, h_n])
+    \]
+  \item \textbf{客户端本地留存}：用户端和骑手端前端在收到每条消息时，将 \texttt{merkle\_root} 字段保存至 \texttt{localStorage}（以 \texttt{order\_id} 为键），本地仅保存最新值；
+  \item \textbf{主动上报}：通信结束或管理员发起审计前，用户端和骑手端可向 \texttt{POST /report\_merkle\_root} 接口上报本地保存的 Root：
+    \[
+      \{\;\mathit{order\_id},\;\mathit{merkle\_root},\;\mathit{role}\;\} \;\to\; \text{\texttt{audit\_logs}}.\mathit{action} = \text{\texttt{CLIENT\_ROOT\_REPORTED}}
+    \]
+  \item \textbf{三方比对}：管理员执行 \texttt{POST /admin/verify/\{order\_id\}} 时，服务器在完成本地 Merkle 验证后，额外从 \texttt{audit\_logs} 中读取用户端和骑手端最近一次上报的 Root，进行三角比对：
+    \[
+      R_{\mathrm{server}} \stackrel{?}{=} R_{\mathrm{user}} \stackrel{?}{=} R_{\mathrm{rider}}
+    \]
+    若三者全部一致，\texttt{all\_match = true}；否则返回 \texttt{all\_match = false} 并告警。
+\end{enumerate}
+
+\subsubsection*{安全性提升}
+
+三端一致性机制将完整性验证的信任锚扩展至通信双方的本地留存，使攻击者需要同时满足以下条件才能伪造一致结果：
+
+\begin{itemize}[leftmargin=2em]
+  \item 修改服务端 \texttt{messages} 表中的消息内容；
+  \item 同步伪造 \texttt{audit\_logs} 中的 Merkle Root 快照；
+  \item 同时控制用户端和骑手端本地存储，或阻止其上报真实 Root。
+\end{itemize}
+
+三个条件需同时满足，实际攻击难度大幅提升。需要说明的是，该机制以"可选增强"而非强制前置条件的方式实现：若客户端未上报 Root（如通信异常中断），服务端仍可基于本地快照独立完成完整性验证；三方比对仅在客户端 Root 存在时才执行额外比对步骤。

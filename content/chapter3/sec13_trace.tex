@@ -1,0 +1,41 @@
+% !TEX root = ../../main.tex
+\subsection{条件溯源与管理员审计机制}
+\label{subsec:trace}
+
+\subsubsection*{设计原则}
+
+FoodShield 的条件溯源机制以"投诉驱动、完整性前置、关键词双重门槛"为核心设计原则。管理员不能随意对任意 PID 发起溯源，而必须在满足以下三个条件后才能完成真实身份解析：（1）提供有效订单号；（2）底层日志完整性验证通过；（3）消息内容命中指定违规关键词。
+
+\subsubsection*{溯源申请流程}
+
+条件溯源的完整流程如下：
+
+\begin{enumerate}[label=\arabic*., leftmargin=2em]
+  \item \textbf{申请提交}：用户端或骑手端可在订单出现异常（骚扰、违规发言、恶意投诉等）情况下，提交 $\langle\mathit{order\_id},\; \mathit{keyword},\; \mathit{reason}\rangle$ 申请溯源；
+  \item \textbf{完整性前置校验}：管理员端收到申请后，服务器首先调用 \texttt{verify\_order\_integrity} 对目标订单执行 Merkle 完整性验证（3.12 节）。若验证失败，系统判定证据链已被污染，阻断后续溯源操作并返回告警；
+  \item \textbf{关键词命中检测}：完整性校验通过后，服务器对该订单内所有消息的明文 \texttt{content} 进行关键词匹配，收集包含指定关键词的消息发送方 PID 集合 $\mathcal{P}_{\mathrm{hit}}$；
+  \item \textbf{PID 解析}：若 $\mathcal{P}_{\mathrm{hit}} \neq \emptyset$，服务器在 \texttt{users} 表中查询各 PID 对应的 \texttt{username}，得到真实用户身份列表；
+  \item \textbf{审计日志记录}：无论溯源成功与否，操作结果（操作者、目标订单、PID、关键词、溯源状态）均写入 \texttt{audit\_logs}，动作类型分别为 \texttt{TRACE\_SUCCESS} 或 \texttt{TRACE\_FAIL}；
+  \item \textbf{结果返回}：管理员端展示涉嫌违规用户的 PID 和用户名，并提示下一步处理建议。
+\end{enumerate}
+
+\subsubsection*{管理员权限边界}
+
+管理员端的权限访问受以下机制约束：
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{登录认证}：管理员需通过 \texttt{POST /admin/login} 接口完成身份认证，验证用户名和口令后才能访问 \texttt{/admin/*} 系列接口；
+  \item \textbf{装饰器鉴权}：所有管理员接口通过 \texttt{@admin\_required} 装饰器拦截，未经认证的请求将被拒绝并记录 \texttt{TRACE\_DENIED} 审计日志；
+  \item \textbf{默认隐藏明文}：\texttt{/admin/messages/\{order\_id\}} 接口只返回消息哈希和元数据，不返回消息密文，管理员无法通过常规查询接口读取通信明文；
+  \item \textbf{操作全程记录}：管理员登录、登出、查询、验证、溯源成功和溯源失败等操作均写入 \texttt{audit\_logs}，使管理员行为本身也处于可追踪的审计视野中。
+\end{itemize}
+
+\subsubsection*{双重门槛的安全意义}
+
+条件溯源采用"完整性前置 + 关键词命中"双重门槛，而不是允许管理员直接按 PID 查询真实身份，其安全意义在于：
+
+\begin{itemize}[leftmargin=2em]
+  \item 若仅依靠管理员主观判断，溯源接口可能被滥用为隐私查询工具，导致用户即使没有违规也可能被追踪；
+  \item 完整性前置校验保证在证据链被污染的情况下不会基于伪造日志执行溯源，保护被追责方的合法权益；
+  \item 关键词命中门槛要求违规行为在消息内容中留有可验证痕迹，避免基于推测或主观意见发起溯源。
+\end{itemize}
