@@ -8,7 +8,9 @@ FoodShield 的条件溯源机制以"投诉驱动、完整性前置、关键词�
 
 \subsubsection*{溯源申请流程}
 
-条件溯源的完整流程如下：
+条件溯源的完整流程如图~\ref{fig:trace_detail} 所示，包含"完整性前置"与"关键词命中"两道不可绕过的门槛：
+
+\input{content/chapter3/figures/fig_trace}
 
 \begin{enumerate}[label=\arabic*., leftmargin=2em]
   \item \textbf{申请提交}：用户端或骑手端可在订单出现异常（骚扰、违规发言、恶意投诉等）情况下，提交 $\langle\mathit{order\_id},\; \mathit{keyword},\; \mathit{reason}\rangle$ 申请溯源；

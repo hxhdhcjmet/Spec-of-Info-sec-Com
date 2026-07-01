@@ -1,0 +1,69 @@
+% !TEX root = ../../../main.tex
+% 系统总体架构分层图
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  layerbox/.style = {rectangle, draw, rounded corners=4pt, minimum width=13.0cm, minimum height=1.1cm,
+                     font=\small, text centered},
+  comp/.style     = {rectangle, draw, rounded corners=2pt, minimum width=2.6cm, minimum height=0.65cm,
+                     font=\small, fill=white},
+  lbl/.style      = {font=\small\bfseries},
+  arr/.style      = {-Stealth, thick},
+]
+
+% 五层背景色
+\fill[blue!8,   rounded corners=4pt] (-6.7,-0.15) rectangle (6.7, 1.05);
+\fill[green!10, rounded corners=4pt] (-6.7,-1.40) rectangle (6.7,-0.25);
+\fill[orange!12,rounded corners=4pt] (-6.7,-2.65) rectangle (6.7,-1.50);
+\fill[purple!8, rounded corners=4pt] (-6.7,-3.90) rectangle (6.7,-2.75);
+\fill[red!8,    rounded corners=4pt] (-6.7,-5.15) rectangle (6.7,-4.00);
+
+% 层标题（左侧）
+\node[lbl, anchor=east] at (-6.6, 0.45) {表现层};
+\node[lbl, anchor=east] at (-6.6,-0.85) {业务服务层};
+\node[lbl, anchor=east] at (-6.6,-2.10) {安全机制层};
+\node[lbl, anchor=east] at (-6.6,-3.35) {数据存储层};
+\node[lbl, anchor=east] at (-6.6,-4.60) {审计验证层};
+
+% 表现层组件
+\node[comp, fill=blue!15]    at (-4.2, 0.45) {用户端};
+\node[comp, fill=blue!15]    at (-1.2, 0.45) {骑手端};
+\node[comp, fill=blue!15]    at ( 1.8, 0.45) {管理员端};
+\node[comp, fill=blue!8,  draw=blue!30]  at ( 4.8, 0.45) {WebSocket 通道};
+
+% 业务服务层组件
+\node[comp, fill=green!18]   at (-4.8,-0.85) {注册/登录};
+\node[comp, fill=green!18]   at (-2.0,-0.85) {订单管理};
+\node[comp, fill=green!18]   at ( 0.8,-0.85) {消息转发};
+\node[comp, fill=green!18]   at ( 3.6,-0.85) {投诉申请};
+\node[comp, fill=green!10, draw=green!40] at ( 6.2,-0.85) {Token 验证};
+
+% 安全机制层组件
+\node[comp, fill=orange!20]  at (-4.8,-2.10) {PID 生成};
+\node[comp, fill=orange!20]  at (-2.0,-2.10) {SM4-CBC 加密};
+\node[comp, fill=orange!20]  at ( 0.8,-2.10) {SM3 摘要};
+\node[comp, fill=orange!20]  at ( 3.6,-2.10) {Merkle Tree};
+\node[comp, fill=orange!12, draw=orange!50] at ( 6.2,-2.10) {条件溯源};
+
+% 数据存储层组件
+\node[comp, fill=purple!12]  at (-4.2,-3.35) {users 表};
+\node[comp, fill=purple!12]  at (-1.4,-3.35) {orders 表};
+\node[comp, fill=purple!12]  at ( 1.4,-3.35) {messages 表};
+\node[comp, fill=purple!12]  at ( 4.2,-3.35) {audit\_logs 表};
+
+% 审计验证层组件
+\node[comp, fill=red!14]     at (-4.2,-4.60) {完整性验证};
+\node[comp, fill=red!14]     at (-1.2,-4.60) {Root 快照比对};
+\node[comp, fill=red!14]     at ( 1.8,-4.60) {溯源操作日志};
+\node[comp, fill=red!14]     at ( 4.8,-4.60) {三端摘要增强};
+
+% 层间箭头（右侧连接线）
+\draw[arr, gray] (6.7, 0.45) -- (6.7,-0.85) node[midway, right, font=\footnotesize]{调用};
+\draw[arr, gray] (6.7,-0.85) -- (6.7,-2.10) node[midway, right, font=\footnotesize]{调用};
+\draw[arr, gray] (6.7,-2.10) -- (6.7,-3.35) node[midway, right, font=\footnotesize]{读写};
+\draw[arr, gray] (6.7,-3.35) -- (6.7,-4.60) node[midway, right, font=\footnotesize]{审计};
+
+\end{tikzpicture}
+\caption{FoodShield 系统总体架构分层图}
+\label{fig:arch_layers}
+\end{figure}

@@ -1,0 +1,44 @@
+% !TEX root = ../../../main.tex
+% 消息处理流水线图
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance = 0.5cm and 1.0cm,
+  pstep/.style = {rectangle, draw, rounded corners=3pt, minimum width=2.8cm, minimum height=0.72cm,
+                  font=\small, fill=blue!8, draw=blue!50!black},
+  pside/.style = {rectangle, draw, rounded corners=2pt, minimum width=3.0cm, minimum height=0.62cm,
+                  font=\small, fill=orange!14, draw=orange!50!black},
+  pout/.style  = {rectangle, draw, rounded corners=8pt, minimum width=2.6cm, minimum height=0.62cm,
+                  font=\small, fill=green!14, draw=green!50!black},
+  arr/.style   = {-Stealth, thick},
+  lbl/.style   = {font=\small},
+]
+
+% 主流水线（横向）
+\node[pstep]                        (recv)   {接收明文消息 $M$};
+\node[pstep, right=1.0cm of recv]   (split)  {并行处理};
+\node[pstep, right=1.0cm of split]  (store)  {写入 messages 表};
+\node[pstep, right=1.0cm of store]  (merkle) {更新 Merkle Tree};
+\node[pout,  right=1.0cm of merkle] (bcast)  {广播给房间成员};
+
+% 并行分支（向上/向下）
+\node[pside, above=1.0cm of split] (enc)  {SM4-CBC 加密 $\to$ 密文 $C$};
+\node[pside, below=1.0cm of split] (hash) {SM3 摘要 $\to$ $h = \mathrm{SM3}(\cdots)$};
+
+% 箭头
+\draw[arr] (recv)   -- (split);
+\draw[arr] (split.north) -- (enc.south);
+\draw[arr] (split.south) -- (hash.north);
+\draw[arr] (enc.east)  -- ++(0.4,0) |- (store.north);
+\draw[arr] (hash.east) -- ++(0.4,0) |- (store.south);
+\draw[arr] (store)  -- (merkle);
+\draw[arr] (merkle) -- (bcast);
+
+% 旁注
+\node[lbl, above=0.1cm of enc]  {随机 IV，PKCS7 填充};
+\node[lbl, below=0.1cm of hash] {orderID|role|ts|ciphertext};
+
+\end{tikzpicture}
+\caption{消息处理流水线（加密存储与哈希计算并行）}
+\label{fig:msg_pipeline}
+\end{figure}

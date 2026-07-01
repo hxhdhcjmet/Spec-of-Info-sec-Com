@@ -4,7 +4,11 @@
 
 \subsubsection*{消息加密存储}
 
-通信消息在写入数据库之前，经过 SM4-CBC 加密处理，数据库中不存储任何明文内容。加密流程如下：
+通信消息在写入数据库之前，经过 SM4-CBC 加密处理，数据库中不存储任何明文内容。消息处理的完整流水线如图~\ref{fig:msg_pipeline} 所示，加密与哈希计算并行进行，随后一并写入数据库。
+
+\input{content/chapter3/figures/fig_msg_pipeline}
+
+加密流程如下：
 
 \begin{enumerate}[label=\arabic*., leftmargin=2em]
   \item 系统从环境变量 \texttt{FOODSHIELD\_SM4\_KEY} 读取 SM4 密钥（128 位），若未配置则使用系统内置默认密钥；

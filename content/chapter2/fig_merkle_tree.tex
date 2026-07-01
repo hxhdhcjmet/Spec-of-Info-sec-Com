@@ -1,0 +1,61 @@
+% !TEX root = ../../main.tex
+% Merkle Tree 完整树结构图（4叶子）
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  level distance = 1.2cm,
+  sibling distance = 4.6cm,
+  edge from parent/.style = {draw, -Stealth, thick},
+  leafnd/.style  = {rectangle, draw, rounded corners=2pt, minimum width=2.8cm, minimum height=0.62cm,
+                    font=\small, fill=green!12, draw=green!50!black},
+  midnd/.style   = {rectangle, draw, rounded corners=2pt, minimum width=3.0cm, minimum height=0.62cm,
+                    font=\small, fill=blue!10, draw=blue!50!black},
+  rootnd/.style  = {rectangle, draw, rounded corners=2pt, minimum width=3.2cm, minimum height=0.68cm,
+                    font=\small\bfseries, fill=red!10, draw=red!50!black},
+  lbl/.style     = {font=\small\itshape},
+  arr/.style     = {-Stealth, thick},
+]
+
+% 叶子节点
+\node[leafnd] (L1) at (0,   0) {$\mathit{leaf}_1 = H(m_1)$};
+\node[leafnd] (L2) at (4.2, 0) {$\mathit{leaf}_2 = H(m_2)$};
+\node[leafnd] (L3) at (8.4, 0) {$\mathit{leaf}_3 = H(m_3)$};
+\node[leafnd] (L4) at (12.6,0) {$\mathit{leaf}_4 = H(m_4)$};
+
+% 中间节点
+\node[midnd] (P12) at (2.1, 1.8) {$H(\mathit{leaf}_1 \| \mathit{leaf}_2)$};
+\node[midnd] (P34) at (10.5,1.8) {$H(\mathit{leaf}_3 \| \mathit{leaf}_4)$};
+
+% 根节点
+\node[rootnd] (ROOT) at (6.3, 3.6) {Merkle Root $= H(P_{12} \| P_{34})$};
+
+% 连线
+\draw[arr] (L1.north)   -- (P12.south);
+\draw[arr] (L2.north)   -- (P12.south);
+\draw[arr] (L3.north)   -- (P34.south);
+\draw[arr] (L4.north)   -- (P34.south);
+\draw[arr] (P12.north)  -- (ROOT.south);
+\draw[arr] (P34.north)  -- (ROOT.south);
+
+% 数据标注
+\node[lbl, below=0.3cm of L1] {消息 $m_1$};
+\node[lbl, below=0.3cm of L2] {消息 $m_2$};
+\node[lbl, below=0.3cm of L3] {消息 $m_3$};
+\node[lbl, below=0.3cm of L4] {消息 $m_4$};
+
+% 高亮 leaf2 变化传播路径（虚线框）
+\draw[dashed, red!60!black, thick, rounded corners=3pt]
+  ([xshift=-3pt, yshift=-3pt] L2.south west) rectangle ([xshift=3pt, yshift=3pt] L2.north east);
+\draw[dashed, red!60!black, thick, rounded corners=3pt]
+  ([xshift=-3pt, yshift=-3pt] P12.south west) rectangle ([xshift=3pt, yshift=3pt] P12.north east);
+\draw[dashed, red!60!black, thick, rounded corners=3pt]
+  ([xshift=-3pt, yshift=-3pt] ROOT.south west) rectangle ([xshift=3pt, yshift=3pt] ROOT.north east);
+
+\node[lbl, right=0.15cm of L2, red!60!black] {← 若 $m_2$ 改变};
+\node[lbl, right=0.15cm of P12, red!60!black] {← 父节点改变};
+\node[lbl, right=0.15cm of ROOT, red!60!black] {← Root 改变};
+
+\end{tikzpicture}
+\caption{Merkle Tree 结构示意图（任意叶子变化均导致 Root 改变）}
+\label{fig:merkle_tree}
+\end{figure}

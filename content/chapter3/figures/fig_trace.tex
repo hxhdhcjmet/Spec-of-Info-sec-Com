@@ -1,0 +1,49 @@
+% !TEX root = ../../../main.tex
+% 条件溯源详细流程图（含双重门槛）
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance = 0.55cm and 2.6cm,
+  proc/.style     = {rectangle, draw, rounded corners=3pt, minimum width=3.6cm, minimum height=0.65cm,
+                     font=\small, fill=blue!8, draw=blue!50!black},
+  decision/.style = {diamond, draw, aspect=2.4, minimum width=3.6cm, minimum height=0.85cm,
+                     font=\small, align=center, fill=orange!15, draw=orange!60!black, inner sep=2pt},
+  term/.style     = {rectangle, draw, rounded corners=8pt, minimum width=3.2cm, minimum height=0.65cm,
+                     font=\small, fill=green!14, draw=green!50!black},
+  reject/.style   = {rectangle, draw, rounded corners=8pt, minimum width=3.2cm, minimum height=0.62cm,
+                     font=\small, fill=red!12, draw=red!50!black},
+  arr/.style      = {-Stealth, thick},
+  lbl/.style      = {font=\small},
+]
+
+\node[proc]     (submit)  {用户/骑手提交投诉（orderID + 原因 + 关键词）};
+\node[proc,     below=0.65cm of submit]  (admin)   {管理员身份认证 + 权限校验};
+\node[decision, below=0.80cm of admin]   (d_int)   {完整性\\校验通过？};
+\node[reject,   right=2.6cm of d_int]   (r_int)   {拒绝溯源（日志可疑），写入异常日志};
+\node[proc,     below=0.90cm of d_int]   (search)  {消息关键词检索（解密后明文）};
+\node[decision, below=0.80cm of search]  (d_kw)    {关键词\\命中？};
+\node[reject,   right=2.6cm of d_kw]    (r_kw)    {拒绝溯源（无命中）};
+\node[proc,     below=0.90cm of d_kw]   (pid)     {查询订单对应 PID};
+\node[proc,     below=0.65cm of pid]    (uid)     {查询 PID $\to$ userID 映射};
+\node[term,     below=0.65cm of uid]    (result)  {返回溯源结果（userID）};
+\node[proc,     below=0.65cm of result] (log)     {写入审计日志（操作者/时间/订单/理由/结果）};
+
+\draw[arr] (submit) -- (admin);
+\draw[arr] (admin)  -- (d_int);
+\draw[arr] (d_int)  -- node[lbl,left]{是} (search);
+\draw[arr] (d_int)  -- node[lbl,above]{否} (r_int);
+\draw[arr] (search) -- (d_kw);
+\draw[arr] (d_kw)   -- node[lbl,left]{是} (pid);
+\draw[arr] (d_kw)   -- node[lbl,above]{否} (r_kw);
+\draw[arr] (pid)    -- (uid);
+\draw[arr] (uid)    -- (result);
+\draw[arr] (result) -- (log);
+
+% 两处不可绕过标注
+\node[font=\small\itshape, red!60!black, left=0.15cm of d_int]  {门槛一};
+\node[font=\small\itshape, red!60!black, left=0.15cm of d_kw]   {门槛二};
+
+\end{tikzpicture}
+\caption{条件溯源详细流程图（含完整性前置校验与关键词双重门槛）}
+\label{fig:trace_detail}
+\end{figure}

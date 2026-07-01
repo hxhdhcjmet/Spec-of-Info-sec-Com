@@ -1,0 +1,55 @@
+% !TEX root = ../../main.tex
+% WebSocket 握手时序图
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  arr/.style   = {-Stealth, thick},
+  lbl/.style   = {font=\small},
+  hlbl/.style  = {font=\small\bfseries},
+  dashline/.style = {dashed, thick, gray!50},
+]
+
+% 生命线
+\draw[thick] (0, 0) -- (0, -8.5);
+\draw[thick] (6, 0) -- (6, -8.5);
+\draw[thick] (12,0) -- (12,-8.5);
+
+% 角色标题
+\node[hlbl, above=0.1cm] at (0,  0) {客户端（浏览器）};
+\node[hlbl, above=0.1cm] at (6,  0) {服务器};
+\node[hlbl, above=0.1cm] at (12, 0) {订单房间};
+
+% Phase 1: HTTP 升级握手
+\draw[dashline] (-1.5,-1.0) -- (13.5,-1.0);
+\node[font=\small\itshape, right] at (-1.5,-0.8) {阶段一：HTTP 升级握手};
+
+\draw[arr] (0,-1.4) -- node[above, lbl]{HTTP GET, Upgrade: websocket} (6,-1.4);
+\draw[arr] (6,-2.0) -- node[above, lbl]{101 Switching Protocols} (0,-2.0);
+
+% Phase 2: 身份认证
+\draw[dashline] (-1.5,-2.7) -- (13.5,-2.7);
+\node[font=\small\itshape, right] at (-1.5,-2.5) {阶段二：Token 认证};
+
+\draw[arr] (0,-3.1) -- node[above, lbl]{\{event: join, orderID, token\}} (6,-3.1);
+\draw[arr] (6,-3.7) -- node[above, lbl]{验证 Token → 通过} (0,-3.7);
+\draw[arr] (6,-4.2) -- node[above, lbl]{加入 Room(orderID)} (12,-4.2);
+
+% Phase 3: 消息交互
+\draw[dashline] (-1.5,-4.9) -- (13.5,-4.9);
+\node[font=\small\itshape, right] at (-1.5,-4.7) {阶段三：全双工消息交互};
+
+\draw[arr] (0,-5.3) -- node[above, lbl]{发送消息帧（Data Frame）} (6,-5.3);
+\draw[arr] (6,-5.8) -- node[above, lbl]{加密存储 + 广播到 Room} (12,-5.8);
+\draw[arr] (12,-6.3)-- node[above, lbl]{推送给房间内所有成员} (0,-6.3);
+
+% Phase 4: 连接关闭
+\draw[dashline] (-1.5,-7.0) -- (13.5,-7.0);
+\node[font=\small\itshape, right] at (-1.5,-6.8) {阶段四：连接关闭};
+
+\draw[arr] (0,-7.4) -- node[above, lbl]{Close Frame} (6,-7.4);
+\draw[arr] (6,-8.0) -- node[above, lbl]{Close ACK + 触发 Merkle 快照} (0,-8.0);
+
+\end{tikzpicture}
+\caption{WebSocket 握手及订单通信时序示意图}
+\label{fig:websocket_seq}
+\end{figure}
