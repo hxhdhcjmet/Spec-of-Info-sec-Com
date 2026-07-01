@@ -30,6 +30,8 @@ Token 的理想生成公式为：
 
 用户提交 \texttt{join\_order} 请求时，服务器执行以下验证步骤：
 
+\input{content/chapter3/figures/fig_token}
+
 \begin{enumerate}[label=\arabic*., leftmargin=2em]
   \item \textbf{有效期校验}：读取请求中的 $\mathit{timestamp}$，与当前服务器时间比较，若超出有效窗口（默认 3600 秒），拒绝本次请求；
   \item \textbf{重新计算 Token}：以数据库中保存的 $K_{\mathrm{order}}$、$\mathit{orderID}$、$\mathrm{PID}$、$\mathit{timestamp}$（及 $\mathit{nonce}$）为输入，重新调用 HMAC-SM3 计算期望 Token；

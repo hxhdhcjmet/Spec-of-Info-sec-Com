@@ -6,6 +6,8 @@
 
 FoodShield 采用基于 Flask-SocketIO 的 WebSocket 通道实现用户端与骑手端之间的实时消息通信。系统以订单号（\texttt{order\_id}）作为通信房间的唯一标识，每个订单对应一个独立的 WebSocket Room，不同订单的通信消息在房间层面实现隔离，互不干扰。
 
+\input{content/chapter3/figures/fig_room}
+
 \subsubsection*{入房认证流程}
 
 \textbf{用户端入房}（\texttt{join\_order} 事件）需提交以下字段：

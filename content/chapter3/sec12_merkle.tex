@@ -39,6 +39,8 @@ Merkle Root 快照写入 \texttt{audit\_logs} 表的触发时机包括以下几�
 
 管理员执行日志完整性验证时（\texttt{POST /admin/verify/\{order\_id\}}），系统按以下步骤完成验证：
 
+\input{content/chapter3/figures/fig_merkle_verify}
+
 \begin{enumerate}[label=\arabic*., leftmargin=2em]
   \item 从数据库按序读取订单内所有消息，对 \texttt{content} 字段执行 SM4 解密，还原明文；
   \item 对每条消息按相同公式重新计算消息哈希 $h_i'$，与数据库中存储的 \texttt{message\_hash} 对比；若存在不匹配的条目，记录差异列表；

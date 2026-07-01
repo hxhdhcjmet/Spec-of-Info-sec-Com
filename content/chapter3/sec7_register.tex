@@ -5,6 +5,8 @@
 
 FoodShield 的用户注册流程在普通用户名注册基础上增加了口令认证和数学验证码两道机制，以降低机器批量注册和匿名身份滥用风险。完整注册流程如下：
 
+\input{content/chapter3/figures/fig_register}
+
 \begin{enumerate}[label=\arabic*., leftmargin=2em]
   \item 用户访问注册页面，前端向服务器请求验证码题目（\texttt{GET /captcha}）；
   \item 服务器随机生成一道整数四则运算题，将答案存入服务端 session，向前端返回题目字符串；
