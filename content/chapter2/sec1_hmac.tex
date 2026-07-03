@@ -3,11 +3,9 @@
 HMAC（Hash-based Message Authentication Code）是一种基于密码杂凑函数和共享密钥构造的消息认证码机制，由 Bellare、Canetti 和 Krawczyk 于 1996 年提出，并于 1997 年标准化为 RFC 2104\footnote{Bellare, M., Canetti, R., Krawczyk, H. "Keyed-Hashing for Message Authentication." RFC 2104, IETF, 1997.}。与单纯的哈希运算不同，HMAC 在计算过程中引入了密钥，因此不仅能够检测消息内容是否被篡改，还能够验证消息是否由持有合法密钥的一方生成。HMAC 通常用于身份认证、接口鉴权、请求防伪造和数据完整性校验等场景。
 
 设 $H$ 表示密码杂凑函数，$K$ 表示共享密钥，$m$ 表示待认证消息，则 HMAC 的一般形式可以表示为：
-
 \begin{equation}
 \operatorname{HMAC}(K,m)=H\bigl((K' \oplus \mathit{opad})\parallel H((K' \oplus \mathit{ipad})\parallel m)\bigr)
 \end{equation}
-
 其中，$K'$ 表示经过填充或压缩处理后的密钥（若密钥长度小于杂凑函数的分组长度，则在右侧填充零；若大于分组长度，则先对密钥计算一次杂凑值），$\mathit{opad}$（outer pad）和 $\mathit{ipad}$（inner pad）分别表示外部填充值和内部填充值，$\parallel$ 表示字符串连接操作，$\oplus$ 表示按位异或。对于输出 256 bit 摘要的杂凑函数（如 SM3），$\mathit{ipad}$ 为字节 0x36 重复 32 次构成的 512 bit 序列，$\mathit{opad}$ 为字节 0x5C 重复 32 次构成的 512 bit 序列。
 
 HMAC 的安全性取决于底层杂凑函数的性质和密钥的保密性。在形式化安全分析中，HMAC 的安全性通常以\textbf{选择消息攻击下的存在性不可伪造性}（Existential Unforgeability under Chosen-Message Attack, EUF-CMA）来刻画：对于概率多项式时间的攻击者 $\mathcal{A}$，若其不知道密钥 $K$，但在可以查询任意消息 $m_i$ 对应的 $\operatorname{HMAC}(K, m_i)$ 的条件下，仍然难以构造出一个未查询过的消息 $m^*$ 的合法认证码 $\operatorname{HMAC}(K, m^*)$，则称该 HMAC 方案满足 EUF-CMA 安全性。当底层杂凑函数满足抗碰撞性和伪随机函数性质时，HMAC 的安全性可以归约到杂凑函数的安全性质上。
