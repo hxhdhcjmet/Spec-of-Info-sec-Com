@@ -13,10 +13,10 @@ FoodShield 的条件溯源机制以"投诉驱动、完整性前置、关键词�
 \input{content/chapter3/figures/fig_trace}
 
 \begin{enumerate}[label=\arabic*., leftmargin=2em]
-  \item \textbf{申请提交}：用户端或骑手端可在订单出现异常（骚扰、违规发言、恶意投诉等）情况下，提交 $\langle\mathit{order\_id},\; \mathit{keyword},\; \mathit{reason}\rangle$ 申请溯源；
+  \item \textbf{申请提交}：用户端或骑手端可在订单出现异常（骚扰、违规发言、恶意投诉等）情况下，提交$\langle\mathit{order\_id},\; \mathit{keyword},\; \mathit{reason}\rangle$申请溯源；
   \item \textbf{完整性前置校验}：管理员端收到申请后，服务器首先调用 \texttt{verify\_order\_integrity} 对目标订单执行 Merkle 完整性验证（3.12 节）。若验证失败，系统判定证据链已被污染，阻断后续溯源操作并返回告警；
-  \item \textbf{关键词命中检测}：完整性校验通过后，服务器对该订单内所有消息的明文 \texttt{content} 进行关键词匹配，收集包含指定关键词的消息发送方 PID 集合 $\mathcal{P}_{\mathrm{hit}}$；
-  \item \textbf{PID 解析}：若 $\mathcal{P}_{\mathrm{hit}} \neq \emptyset$，服务器在 \texttt{users} 表中查询各 PID 对应的 \texttt{username}，得到真实用户身份列表；
+  \item \textbf{关键词命中检测}：完整性校验通过后，服务器对该订单内所有消息的明文 \texttt{content} 进行关键词匹配，收集包含指定关键词的消息发送方 PID 集合$\mathcal{P}_{\mathrm{hit}}$；
+  \item \textbf{PID 解析}：若$\mathcal{P}_{\mathrm{hit}} \neq \emptyset$，服务器在 \texttt{users} 表中查询各 PID 对应的 \texttt{username}，得到真实用户身份列表；
   \item \textbf{审计日志记录}：无论溯源成功与否，操作结果（操作者、目标订单、PID、关键词、溯源状态）均写入 \texttt{audit\_logs}，动作类型分别为 \texttt{TRACE\_SUCCESS} 或 \texttt{TRACE\_FAIL}；
   \item \textbf{结果返回}：管理员端展示涉嫌违规用户的 PID 和用户名，并提示下一步处理建议。
 \end{enumerate}
@@ -26,10 +26,10 @@ FoodShield 的条件溯源机制以"投诉驱动、完整性前置、关键词�
 管理员端的权限访问受以下机制约束：
 
 \begin{itemize}[leftmargin=2em]
-  \item \textbf{登录认证}：管理员需通过 \texttt{POST /admin/login} 接口完成身份认证，验证用户名和口令后才能访问 \texttt{/admin/*} 系列接口；
-  \item \textbf{装饰器鉴权}：所有管理员接口通过 \texttt{@admin\_required} 装饰器拦截，未经认证的请求将被拒绝并记录 \texttt{TRACE\_DENIED} 审计日志；
-  \item \textbf{默认隐藏明文}：\texttt{/admin/messages/\{order\_id\}} 接口只返回消息哈希和元数据，不返回消息密文，管理员无法通过常规查询接口读取通信明文；
-  \item \textbf{操作全程记录}：管理员登录、登出、查询、验证、溯源成功和溯源失败等操作均写入 \texttt{audit\_logs}，使管理员行为本身也处于可追踪的审计视野中。
+  \item \textbf{登录认证}：管理员需通过登录接口完成身份认证，验证用户名和口令后才能访问管理端系列接口；
+  \item \textbf{装饰器鉴权}：所有管理员接口通过\texttt{@admin\_required}装饰器拦截，未经认证的请求将被拒绝并记录\texttt{TRACE\_DENIED}审计日志；
+  \item \textbf{默认隐藏明文}：消息查询接口只返回消息哈希和元数据，不返回消息密文，管理员无法通过常规查询接口读取通信明文；
+  \item \textbf{操作全程记录}：管理员登录、登出、查询、验证、溯源成功和溯源失败等操作均写入\texttt{audit\_logs}，使管理员行为本身也处于可追踪的审计视野中。
 \end{itemize}
 
 \subsubsection*{双重门槛的安全意义}

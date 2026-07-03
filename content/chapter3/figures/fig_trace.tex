@@ -16,17 +16,17 @@
   lbl/.style      = {font=\small},
 ]
 
-\node[proc]     (submit)  {用户/骑手提交投诉（orderID + 原因 + 关键词）};
+\node[proc]     (submit)  {用户/骑手提交投诉（orderID+原因+关键词）};
 \node[proc,     below=0.65cm of submit]  (admin)   {管理员身份认证 + 权限校验};
 \node[decision, below=0.80cm of admin]   (d_int)   {完整性\\校验通过？};
-\node[reject,   right=2.6cm of d_int]   (r_int)   {拒绝溯源（日志可疑），写入异常日志};
+\node[reject,   right=2.6cm of d_int]   (r_int)   {拒绝溯源，写入异常日志};
 \node[proc,     below=0.90cm of d_int]   (search)  {消息关键词检索（解密后明文）};
 \node[decision, below=0.80cm of search]  (d_kw)    {关键词\\命中？};
 \node[reject,   right=2.6cm of d_kw]    (r_kw)    {拒绝溯源（无命中）};
 \node[proc,     below=0.90cm of d_kw]   (pid)     {查询订单对应 PID};
-\node[proc,     below=0.65cm of pid]    (uid)     {查询 PID $\to$ userID 映射};
+\node[proc,     below=0.65cm of pid]    (uid)     {查询 PID$\to$userID 映射};
 \node[term,     below=0.65cm of uid]    (result)  {返回溯源结果（userID）};
-\node[proc,     below=0.65cm of result] (log)     {写入审计日志（操作者/时间/订单/理由/结果）};
+\node[proc,     below=0.65cm of result] (log)     {写入审计日志（操作者/时间/订单/理由）};
 
 \draw[arr] (submit) -- (admin);
 \draw[arr] (admin)  -- (d_int);

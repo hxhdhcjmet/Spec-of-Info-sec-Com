@@ -5,7 +5,7 @@
 
 首先建立正常通信场景：用户与骑手在同一订单房间发送多条消息，管理员生成 Merkle Root 快照。此时完整性验证返回 \texttt{VERIFY\_OK}，所有消息哈希一致，当前 Root 与快照 Root 匹配。
 
-随后执行篡改：攻击者直接修改数据库中某条消息的加密内容字段。由于消息哈希绑定原始明文，修改密文后解密结果与原哈希不匹配。完整性验证返回 \texttt{VERIFY\_FAIL}，\texttt{hash\_mismatch\_count} $= 1$，\texttt{root\_match} $=$ \texttt{False}。该场景的运行输出见 5.3 节图~\ref{fig:attack_demo} 中 \texttt{[tamper\_detection]} 部分。四种篡改类型检测结果如表~\ref{tab:tamper_compare}所示。
+随后执行篡改：攻击者直接修改数据库中某条消息的加密内容字段。由于消息哈希绑定原始明文，修改密文后解密结果与原哈希不匹配。完整性验证返回 \texttt{VERIFY\_FAIL}，\texttt{hash\_mismatch\_count}$= 1$，\texttt{root\_match}$=$\texttt{False}。该场景的运行输出见 5.3 节图~\ref{fig:attack_demo} 中 \texttt{[tamper\_detection]} 部分。四种篡改类型检测结果如表~\ref{tab:tamper_compare}所示。
 
 \begin{table}[H]
 \centering
@@ -26,4 +26,4 @@
 
 其中"修改密文"已通过 attack\_demo 脚本 S10 项实际验证，其余三种基于 Merkle Tree 机制分析：删除、插入和重排虽不产生逐条哈希不匹配，但均改变 Merkle Tree 结构导致 Root 值变化。
 
-综合测试结论：（1）内容篡改可精确定位——系统不仅检测到 Root 不匹配，还能报告 \texttt{stored\_hash} 与 \texttt{expected\_hash} 的差异条目；（2）结构篡改可全局检测——删除、插入和重排通过 Root 比对检测到完整性异常；（3）三端一致性增强——攻击者需同时篡改三方存储的 Root 才能伪造一致结果，单方面篡改必然被暴露。上述结论与第三章安全性分析一致：SM3 抗碰撞性（碰撞复杂度 $2^{128}$）保证字段修改后哈希以压倒性概率改变，Merkle Tree 级联特性保证叶子变化传导至 Root。
+综合测试结论：（1）内容篡改可精确定位——系统不仅检测到 Root 不匹配，还能报告 \texttt{stored\_hash} 与 \texttt{expected\_hash} 的差异条目；（2）结构篡改可全局检测——删除、插入和重排通过 Root 比对检测到完整性异常；（3）三端一致性增强——攻击者需同时篡改三方存储的 Root 才能伪造一致结果，单方面篡改必然被暴露。上述结论与第三章安全性分析一致：SM3 抗碰撞性（碰撞复杂度$2^{128}$）保证字段修改后哈希以压倒性概率改变，Merkle Tree 级联特性保证叶子变化传导至 Root。

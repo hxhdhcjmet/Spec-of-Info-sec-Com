@@ -19,12 +19,12 @@ FoodShield 使用 SQLite 作为数据存储后端，数据库共设计四张核�
 \textbf{字段名} & \textbf{类型} & \textbf{说明} & \textbf{安全设计意义} \\
 \midrule
 id              & INTEGER       & 自增主键               & 内部索引，不对外暴露 \\
-username        & TEXT UNIQUE   & 用户名                 & 用于登录认证 \\
-pid             & TEXT UNIQUE   & 匿名身份标识（PID）    & 隐藏真实 id，用于通信和溯源 \\
-pid\_r          & TEXT          & PID 生成随机数 $r$     & 仅服务端保存，用于条件溯源时重算 PID \\
-password\_hash  & TEXT          & 口令哈希值             & SM3(salt $\|$ password)，不存明文口令 \\
-salt            & TEXT          & 随机盐值               & 防彩虹表攻击，每用户独立随机 \\
-created\_at     & TIMESTAMP     & 注册时间               & 用于审计和频率限制参考 \\
+\texttt{username}        & TEXT UNIQUE   & 用户名                 & 用于登录认证 \\
+\texttt{pid}             & TEXT UNIQUE   & 匿名身份标识（PID）    & 隐藏真实 id，用于通信和溯源 \\
+\texttt{pid\_r}          & TEXT          & PID 生成随机数$r$     & 仅服务端保存，用于条件溯源时重算 PID \\
+\texttt{password\_hash}  & TEXT          & 口令哈希值             & SM3(salt$\|$password)，不存明文口令 \\
+\texttt{salt}            & TEXT          & 随机盐值               & 防彩虹表攻击，每用户独立随机 \\
+\texttt{created\_at}     & TIMESTAMP     & 注册时间               & 用于审计和频率限制参考 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -45,13 +45,13 @@ created\_at     & TIMESTAMP     & 注册时间               & 用于审计和�
 \textbf{字段名} & \textbf{类型} & \textbf{说明} & \textbf{安全设计意义} \\
 \midrule
 id              & INTEGER       & 自增主键               & 内部索引 \\
-order\_id       & TEXT UNIQUE   & UUID 订单号            & 随机生成，防顺序枚举 \\
-user\_id        & INTEGER       & 关联用户内部 id        & 外键引用 users.id，不暴露 PID \\
-token           & TEXT          & 订单 Token             & HMAC-SM3 认证凭证，入房校验用 \\
-token\_timestamp& TEXT          & Token 生成时间戳       & 用于 Token 有效期校验 \\
-status          & TEXT          & 订单状态               & 枚举值：created/taken/delivering/completed/cancelled \\
-note            & TEXT          & 用户备注/标签          & 对骑手端和管理员端隐藏，仅用户自查 \\
-created\_at     & TIMESTAMP     & 订单创建时间           & 用于历史查询与审计 \\
+\texttt{order\_id}       & TEXT UNIQUE   & UUID 订单号            & 随机生成，防顺序枚举 \\
+\texttt{user\_id}        & INTEGER       & 关联用户内部 id        & 外键引用 users.id，不暴露 PID \\
+\texttt{token}           & TEXT          & 订单 Token             & HMAC-SM3 认证凭证，入房校验用 \\
+\texttt{token\_timestamp}& TEXT          & Token 生成时间戳       & 用于 Token 有效期校验 \\
+\texttt{status}          & TEXT          & 订单状态               & 枚举值：created/taken/delivering/completed/cancelled \\
+\texttt{note}            & TEXT          & 用户备注/标签          & 对骑手端和管理员端隐藏，仅用户自查 \\
+\texttt{created\_at}     & TIMESTAMP     & 订单创建时间           & 用于历史查询与审计 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -72,14 +72,14 @@ created\_at     & TIMESTAMP     & 订单创建时间           & 用于历史查
 \textbf{字段名} & \textbf{类型} & \textbf{说明} & \textbf{安全设计意义} \\
 \midrule
 id              & INTEGER       & 自增主键               & 内部索引，也用于消息顺序 \\
-msg\_id         & TEXT UNIQUE   & UUID 消息号            & 全局唯一，防重复提交 \\
-order\_id       & TEXT          & 关联订单号             & 外键引用 orders.order\_id \\
-sender\_pid     & TEXT          & 发送方 PID             & 不暴露真实用户名 \\
-role            & TEXT          & 发送方角色             & 枚举：user/rider/admin/system \\
-content         & TEXT          & 消息密文               & SM4-CBC 加密存储，不存明文 \\
-message\_hash   & TEXT          & 消息摘要               & SM3 对明文字段联合计算，用于 Merkle Tree 叶子节点 \\
-timestamp       & TEXT          & 消息时间戳             & ISO 8601 格式，参与哈希计算 \\
-created\_at     & TIMESTAMP     & 写入时间               & 与 timestamp 一致性校验参考 \\
+\texttt{msg\_id}         & TEXT UNIQUE   & UUID 消息号            & 全局唯一，防重复提交 \\
+\texttt{order\_id}       & TEXT          & 关联订单号             & 外键引用 orders.order\_id \\
+\texttt{sender\_pid}     & TEXT          & 发送方 PID             & 不暴露真实用户名 \\
+\texttt{role}            & TEXT          & 发送方角色             & 枚举：user/rider/admin/system \\
+\texttt{content}         & TEXT          & 消息密文               & SM4-CBC 加密存储，不存明文 \\
+\texttt{message\_hash}   & TEXT          & 消息摘要               & SM3 对明文字段联合计算，用于 Merkle Tree 叶子节点 \\
+\texttt{timestamp}       & TEXT          & 消息时间戳             & ISO 8601 格式，参与哈希计算 \\
+\texttt{created\_at}     & TIMESTAMP     & 写入时间               & 与 timestamp 一致性校验参考 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -100,11 +100,11 @@ created\_at     & TIMESTAMP     & 写入时间               & 与 timestamp 一
 \textbf{字段名} & \textbf{类型} & \textbf{说明} & \textbf{安全设计意义} \\
 \midrule
 id              & INTEGER       & 自增主键               & 内部索引 \\
-order\_id       & TEXT          & 关联订单号             & 可为 NULL（登录等全局操作） \\
-action          & TEXT          & 操作类型               & 枚举：MERKLE\_ROOT\_UPDATED / VERIFY\_OK / VERIFY\_FAIL / TRACE\_SUCCESS 等 \\
-detail          & TEXT          & 操作详情（JSON）       & 记录消息数、不匹配哈希列表、管理员用户名等 \\
-merkle\_root    & TEXT          & 当次 Merkle Root       & 快照值，供后续比对使用 \\
-created\_at     & TIMESTAMP     & 操作时间               & 审计时间线依据 \\
+\texttt{order\_id}       & TEXT          & 关联订单号             & 可为 NULL（登录等全局操作） \\
+\texttt{action}          & TEXT          & 操作类型               & 枚举：ROOT\_UPDATED / VERIFY\_OK / FAIL 等 \\
+\texttt{detail}          & TEXT          & 操作详情（JSON）       & 记录消息数、不匹配哈希列表、管理员用户名等 \\
+\texttt{merkle\_root}    & TEXT          & 当次 Merkle Root       & 快照值，供后续比对使用 \\
+\texttt{created\_at}     & TIMESTAMP     & 操作时间               & 审计时间线依据 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -113,4 +113,4 @@ created\_at     & TIMESTAMP     & 操作时间               & 审计时间线�
 
 四张表之间通过外键关联，整体以订单号为核心索引构建数据流。\texttt{users} 与 \texttt{orders} 通过 \texttt{user\_id} 关联，\texttt{orders} 与 \texttt{messages} 通过 \texttt{order\_id} 关联，\texttt{audit\_logs} 通过 \texttt{order\_id} 与订单和消息建立审计关系。
 
-在隐私保护方面，数据库设计遵循以下原则：其一，消息明文不落库，\texttt{messages.content} 字段存储 SM4-CBC 密文，明文只在服务端内存中短暂存在；其二，\texttt{users.pid\_r}（随机数 $r$）与 \texttt{users.pid} 均仅服务端维护，前端不可见，骑手端不可见；其三，\texttt{orders.note} 备注字段在 API 响应中对骑手端和管理员端屏蔽，仅在用户本人查询订单时返回；其四，\texttt{messages.sender\_pid} 字段中存储的是 PID 而非用户名，管理员默认视图也不直接暴露 PID 对应的真实用户名。
+在隐私保护方面，数据库设计遵循以下原则：其一，消息明文不落库，\texttt{content}字段存储 SM4-CBC 密文，明文只在服务端内存中短暂存在；其二，\texttt{pid\_r}（随机数$r$）与\texttt{pid}均仅服务端维护，前端不可见，骑手端不可见；其三，\texttt{note}备注字段在 API 响应中对骑手端和管理员端屏蔽，仅在用户本人查询订单时返回；其四，\texttt{sender\_pid}字段中存储的是 PID 而非用户名，管理员默认视图也不直接暴露 PID 对应的真实用户名。

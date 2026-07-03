@@ -22,8 +22,8 @@
 \node[reject,   right=2.2cm of d_cap]  (r_cap)   {返回错误，重新输入};
 \node[decision, below=0.85cm of d_cap]  (d_dup)   {用户名\\已存在？};
 \node[reject,   right=2.2cm of d_dup]  (r_dup)   {提示重复，重新输入};
-\node[proc,     below=0.85cm of d_dup]  (hash)    {$\mathrm{SM3}(s\,\|\,\mathit{pwd})$ 存储口令哈希};
-\node[proc,     below=0.55cm of hash]   (pid)     {生成 PID = $\mathrm{HMAC}$-$\mathrm{SM3}(K_{\mathrm{m}}, \mathit{uid}\,\|\,r)$};
+\node[proc,     below=0.85cm of d_dup]  (hash)    {$\mathrm{SM3}(s\,\|\,\mathit{pwd})$存储口令哈希};
+\node[proc,     below=0.55cm of hash]   (pid)     {生成 PID =$\mathrm{HMAC}$-$\mathrm{SM3}(K_{\mathrm{m}}, \mathit{uid}\,\|\,r)$};
 \node[proc,     below=0.55cm of pid]    (db)      {写入 users 表（username, pid, pid\_r, hash, salt）};
 \node[term,     below=0.55cm of db]     (done)    {注册成功，返回用户端};
 

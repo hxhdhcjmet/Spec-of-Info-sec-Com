@@ -4,7 +4,7 @@
 
 \subsubsection*{叶子节点构造}
 
-Merkle Tree 以订单内全部消息的哈希值列表作为叶子节点，叶子节点 $L_i$ 即为第 $i$ 条消息的 \texttt{message\_hash}：
+Merkle Tree 以订单内全部消息的哈希值列表作为叶子节点，叶子节点$L_i$即为第$i$条消息的 \texttt{message\_hash}：
 \[
   L_i = h_i = \operatorname{SM3}(\mathit{orderID} \| \mathit{senderPID}_i \| \mathit{role}_i \| \mathit{content}_{i,\mathrm{plain}} \| \mathit{timestamp}_i)
 \]
@@ -21,8 +21,8 @@ Merkle Tree 采用迭代方式自底向上构建：
       \mathrm{parent}(i) = \operatorname{SM3}(L_{2i} \| L_{2i+1})
     \]
   \item 若当前层节点数为奇数，最后一个节点与自身拼接（复制）后参与父节点计算；
-  \item 重复上述过程直至仅剩一个节点，该节点即为 Merkle Root $R$；
-  \item 若订单内无消息，Root 取固定值 $\operatorname{SM3}(\text{"EMPTY"})$。
+  \item 重复上述过程直至仅剩一个节点，该节点即为 Merkle Root$R$；
+  \item 若订单内无消息，Root 取固定值$\operatorname{SM3}(\text{"EMPTY"})$。
 \end{enumerate}
 
 \subsubsection*{快照触发时机}
@@ -30,9 +30,9 @@ Merkle Tree 采用迭代方式自底向上构建：
 Merkle Root 快照写入 \texttt{audit\_logs} 表的触发时机包括以下几种：
 
 \begin{itemize}[leftmargin=2em]
-  \item \textbf{实时快照}：每条消息发送成功并写入数据库后，服务器立即调用 \texttt{create\_merkle\_snapshot} 函数，以当前全部消息哈希重新计算 Root，将 $\langle\mathit{order\_id},\allowbreak\; \text{MERKLE\_ROOT\_UPDATED},\allowbreak\; \mathit{root},\allowbreak\; \mathit{message\_count}\rangle$ 写入 \texttt{audit\_logs}；
-  \item \textbf{管理员手动快照}：管理员可通过 \texttt{POST /admin/snapshot/\{order\_id\}} 接口手动触发某订单的 Merkle Root 快照；
-  \item \textbf{历史补全快照}：管理员可通过 \texttt{POST /admin/backfill\_snapshots} 接口对所有尚未生成快照的历史订单批量补全 Root 快照。
+  \item \textbf{实时快照}：每条消息发送成功并写入数据库后，服务器立即重新计算 Root，将\texttt{MERKLE\_ROOT\_UPDATED}记录写入\texttt{audit\_logs}；
+  \item \textbf{管理员手动快照}：管理员可通过管理端接口手动触发某订单的 Merkle Root 快照；
+  \item \textbf{历史补全快照}：管理员可对所有尚未生成快照的历史订单批量补全 Root 快照。
 \end{itemize}
 
 \subsubsection*{完整性验证流程}
@@ -43,16 +43,16 @@ Merkle Root 快照写入 \texttt{audit\_logs} 表的触发时机包括以下几�
 
 \begin{enumerate}[label=\arabic*., leftmargin=2em]
   \item 从数据库按序读取订单内所有消息，对 \texttt{content} 字段执行 SM4 解密，还原明文；
-  \item 对每条消息按相同公式重新计算消息哈希 $h_i'$，与数据库中存储的 \texttt{message\_hash} 对比；若存在不匹配的条目，记录差异列表；
-  \item 以重新计算的哈希序列 $[h_1', h_2', \ldots, h_n']$ 为叶子节点重建 Merkle Tree，得到当前 Root $R'$；
-  \item 从 \texttt{audit\_logs} 读取最近一次 \texttt{MERKLE\_ROOT\_UPDATED} 快照，取其 \texttt{merkle\_root} 字段作为历史快照值 $R_{\mathrm{snap}}$；
-  \item 比较 $R' \stackrel{?}{=} R_{\mathrm{snap}}$：若一致且无哈希不匹配条目，则判定完整性验证通过（\texttt{VERIFY\_OK}）；否则判定为验证失败（\texttt{VERIFY\_FAIL}）；
+  \item 对每条消息按相同公式重新计算消息哈希$h_i'$，与数据库中存储的 \texttt{message\_hash} 对比；若存在不匹配的条目，记录差异列表；
+  \item 以重新计算的哈希序列$[h_1', h_2', \ldots, h_n']$为叶子节点重建 Merkle Tree，得到当前 Root$R'$；
+  \item 从 \texttt{audit\_logs} 读取最近一次 \texttt{MERKLE\_ROOT\_UPDATED} 快照，取其 \texttt{merkle\_root} 字段作为历史快照值$R_{\mathrm{snap}}$；
+  \item 比较$R' \stackrel{?}{=} R_{\mathrm{snap}}$：若一致且无哈希不匹配条目，则判定完整性验证通过（\texttt{VERIFY\_OK}）；否则判定为验证失败（\texttt{VERIFY\_FAIL}）；
   \item 将验证结果（包括不匹配哈希列表、当前 Root、快照 Root 和消息数量）写入 \texttt{audit\_logs}。
 \end{enumerate}
 
 该机制能够检测以下篡改行为：
 \begin{itemize}[leftmargin=2em]
-  \item 修改某条消息的内容或时间戳：重新计算的 $h_i'$ 将与存储的 \texttt{message\_hash} 不一致，且 $R' \neq R_{\mathrm{snap}}$；
+  \item 修改某条消息的内容或时间戳：重新计算的$h_i'$将与存储的 \texttt{message\_hash} 不一致，且$R' \neq R_{\mathrm{snap}}$；
   \item 删除某条消息：叶子节点数量减少，树结构改变，$R' \neq R_{\mathrm{snap}}$；
   \item 插入伪造消息：新增叶子节点，$R' \neq R_{\mathrm{snap}}$；
   \item 重排消息顺序：叶子节点顺序改变，$R' \neq R_{\mathrm{snap}}$。

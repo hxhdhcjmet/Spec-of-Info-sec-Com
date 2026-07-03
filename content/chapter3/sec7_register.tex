@@ -12,29 +12,29 @@ FoodShield 的用户注册流程在普通用户名注册基础上增加了口令
   \item 服务器随机生成一道整数四则运算题，将答案存入服务端 session，向前端返回题目字符串；
   \item 用户填写用户名、口令（两次确认）和验证码答案，提交注册请求（\texttt{POST /register}）；
   \item 服务器依次执行：验证码比对、用户名唯一性校验、口令长度校验、口令一致性校验；
-  \item 校验通过后，生成随机盐值 $s$，计算口令存储哈希：
+  \item 校验通过后，生成随机盐值$s$，计算口令存储哈希：
     \[
       h_{\mathrm{pwd}} = \operatorname{SM3}(s \| \mathit{password})
     \]
-    将 $\langle\mathit{username}, h_{\mathrm{pwd}}, s\rangle$ 写入 \texttt{users} 表；
+    将$\langle\mathit{username}, h_{\mathrm{pwd}}, s\rangle$写入 \texttt{users} 表；
   \item 服务器以数据库内部 \texttt{user\_id} 为输入，调用 PID 生成模块，生成用户匿名身份 PID，写入 \texttt{users.pid} 和 \texttt{users.pid\_r}；
   \item 注册成功后自动完成登录，服务端 session 记录 \texttt{user\_id} 和 \texttt{username}，前端跳转至用户主页。
 \end{enumerate}
 
 \subsubsection*{口令存储机制}
 
-为保护用户口令在数据库泄露场景下的安全性，系统采用加盐哈希存储方案，而非存储明文口令。具体地，每位用户注册时，服务器使用 \texttt{secrets.token\_hex(16)} 生成一个 128 位随机盐值 $s$，对拼接后的字符串执行 SM3 哈希：
+为保护用户口令在数据库泄露场景下的安全性，系统采用加盐哈希存储方案，而非存储明文口令。具体地，每位用户注册时，服务器使用 \texttt{secrets.token\_hex(16)} 生成一个 128 位随机盐值$s$，对拼接后的字符串执行 SM3 哈希：
 \[
   h_{\mathrm{pwd}} = \operatorname{SM3}(s \| \mathit{password})
 \]
-数据库中仅保存 $\langle s,\, h_{\mathrm{pwd}}\rangle$，原始口令在计算完成后即丢弃。登录时，服务器从数据库读取 $s$，对用户提交的口令重新计算哈希，并使用恒定时间比较函数（\texttt{hmac.compare\_digest}）与 $h_{\mathrm{pwd}}$ 对比，避免时序侧信道攻击。
+数据库中仅保存$\langle s,\, h_{\mathrm{pwd}}\rangle$，原始口令在计算完成后即丢弃。登录时，服务器从数据库读取$s$，对用户提交的口令重新计算哈希，并使用恒定时间比较函数与$h_{\mathrm{pwd}}$对比，避免时序侧信道攻击。
 
 \subsubsection*{数学验证码机制}
 
 FoodShield 采用服务端 session 管控的数学验证码机制抵御机器批量注册攻击：
 
 \begin{enumerate}[label=\arabic*., leftmargin=2em]
-  \item 每次获取验证码时，服务器从 $[1, 20]$ 范围内随机抽取两个整数，随机选择加法或减法，生成题目字符串（如"$13 + 7 = ?$"）；
+  \item 每次获取验证码时，服务器从$[1, 20]$范围内随机抽取两个整数，随机选择加法或减法，生成题目字符串（如"$13 + 7 = ?$"）；
   \item 正确答案存入服务端 session（\texttt{session["captcha\_answer"]}），不在前端任何位置泄露；
   \item 注册提交时，服务器从 session 读取答案并与用户提交值比较；比对后无论成功与否，立即从 session 中删除该答案（一次性使用），防止枚举重试；
   \item 若 session 中不存在答案（如已过期或被提前消耗），注册请求直接拒绝。
@@ -44,4 +44,4 @@ FoodShield 采用服务端 session 管控的数学验证码机制抵御机器批
 
 \subsubsection*{注册完成后的 PID 初始化}
 
-用户注册成功后，服务器以新分配的 \texttt{user\_id} 为基础输入，调用 PID 生成函数，将生成的 PID 及随机数 $r$ 分别更新至 \texttt{users.pid} 和 \texttt{users.pid\_r}。从此，用户在系统中的通信身份以 PID 作为唯一标识，\texttt{username} 仅用于登录认证，不参与订单通信流程。PID 生成的详细设计见 \ref{subsec:pid}~节。
+用户注册成功后，服务器以新分配的 \texttt{user\_id} 为基础输入，调用 PID 生成函数，将生成的 PID 及随机数$r$分别更新至 \texttt{users.pid} 和 \texttt{users.pid\_r}。从此，用户在系统中的通信身份以 PID 作为唯一标识，\texttt{username} 仅用于登录认证，不参与订单通信流程。PID 生成的详细设计见 \ref{subsec:pid}~节。

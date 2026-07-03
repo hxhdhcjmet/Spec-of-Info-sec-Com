@@ -15,7 +15,7 @@
 ]
 
 % 原始密钥 K
-\node[box, blu] (K) {密钥 $K$};
+\node[box, blu] (K) {密钥$K$};
 
 % 密钥预处理
 \node[box, blu, below=0.65cm of K] (Kp) {$K'$（填充/截断至分组长度）};
@@ -29,7 +29,7 @@
 \node[op, below=0.55cm of opad] (xoro) {$\oplus$};
 
 % 消息 m（左侧，在 xori 旁边）
-\node[box, blu, left=0.7cm of xori] (msg) {消息 $m$};
+\node[box, blu, left=0.7cm of xori] (msg) {消息$m$};
 
 % 内层哈希输入拼接
 \node[box, grn, below=0.5cm of xori, minimum width=3.0cm] (inner_in) {$(K' \oplus \mathit{ipad}) \;\|\; m$};

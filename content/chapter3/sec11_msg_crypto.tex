@@ -14,15 +14,15 @@
   \item 系统从环境变量 \texttt{FOODSHIELD\_SM4\_KEY} 读取 SM4 密钥（128 位），若未配置则使用系统内置默认密钥；
   \item 使用 \texttt{secrets.token\_bytes(16)} 生成随机 IV（初始向量），每条消息使用独立 IV；
   \item 对明文字节串执行 PKCS\#7 填充，使数据长度对齐至 16 字节块边界；
-  \item 执行 SM4-CBC 加密，得到密文 $C$；
-  \item 将 $IV \| C$ 拼接后以十六进制字符串形式存入 \texttt{messages.content} 字段。
+  \item 执行 SM4-CBC 加密，得到密文$C$；
+  \item 将$IV \| C$拼接后以十六进制字符串形式存入 \texttt{messages.content} 字段。
 \end{enumerate}
 
 存储格式可表示为：
 \[
   \texttt{content} = \operatorname{hex}\!\left(\mathit{IV} \,\|\, \operatorname{SM4\text{-}CBC}_{K}(\mathit{IV},\, M)\right)
 \]
-其中 $\mathit{IV}$ 占前 16 字节（32 位十六进制字符），后续为密文。解密时，系统从 \texttt{content} 字段读取十六进制字符串，提取前 16 字节作为 $\mathit{IV}$，其余部分作为密文执行 SM4-CBC 解密，并去除 PKCS\#7 填充后还原明文。
+其中$\mathit{IV}$占前 16 字节（32 位十六进制字符），后续为密文。解密时，系统从 \texttt{content} 字段读取十六进制字符串，提取前 16 字节作为$\mathit{IV}$，其余部分作为密文执行 SM4-CBC 解密，并去除 PKCS\#7 填充后还原明文。
 
 每条消息使用独立随机 IV 的设计保证了相同明文在不同时间加密后产生不同密文，避免攻击者通过密文相等推断消息内容是否相同。
 
@@ -34,7 +34,7 @@
 \[
   h_i = \operatorname{SM3}(\mathit{orderID} \| \mathit{senderPID} \| \mathit{role} \| \mathit{content}_{\mathrm{plain}} \| \mathit{timestamp})
 \]
-其中各字段之间使用分隔符 \texttt{|} 拼接，防止字段边界歧义。$\mathit{content}_{\mathrm{plain}}$ 为消息明文，哈希计算在服务端内存中完成，计算完成后明文即被 SM4 加密替换，数据库中不保存明文摘要。
+其中各字段之间使用分隔符 \texttt{|} 拼接，防止字段边界歧义。$\mathit{content}_{\mathrm{plain}}$为消息明文，哈希计算在服务端内存中完成，计算完成后明文即被 SM4 加密替换，数据库中不保存明文摘要。
 
 上述设计满足以下安全目标：
 \begin{itemize}[leftmargin=2em]
@@ -45,4 +45,4 @@
 
 \subsubsection*{管理员访问控制}
 
-管理员查询消息记录时，\texttt{/admin/messages/\{order\_id\}} 接口仅返回 \texttt{msg\_id}、\texttt{order\_id}、\texttt{sender\_pid}、\texttt{role}、\texttt{message\_hash} 和 \texttt{timestamp} 字段，不返回 \texttt{content} 密文字段。Merkle 完整性验证只需 \texttt{message\_hash} 列表，管理员无需接触消息密文即可完成日志验证，实现审计与明文访问的权限隔离。
+管理员查询消息记录时，消息查询接口仅返回\texttt{msg\_id}、\texttt{order\_id}、\texttt{sender\_pid}、\texttt{role}、\texttt{message\_hash}和\texttt{timestamp}字段，不返回\texttt{content}密文字段。Merkle 完整性验证只需\texttt{message\_hash}列表，管理员无需接触消息密文即可完成日志验证，实现审计与明文访问的权限隔离。

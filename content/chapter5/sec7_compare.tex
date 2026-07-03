@@ -7,19 +7,20 @@
 \centering
 \caption{FoodShield 与现有方案安全特性对比}
 \label{tab:compare}
-\small
+\footnotesize
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lcccc}
 \hline
-\textbf{安全属性} & \textbf{FoodShield} & \textbf{美团/饿了么} & \textbf{普通 WebSocket} & \textbf{群签名方案} \\
+\textbf{安全属性} & \textbf{FoodShield} & \textbf{美团/饿了么} & \textbf{普通WebSocket} & \textbf{群签名方案} \\
 \hline
-G1 匿名性 & PID 强匿名 & 虚拟号码（弱） & 无匿名 & 签名匿名 \\
-G2 认证性 & HMAC-SM3 Token & 无凭证认证 & 无认证 & 群签名认证 \\
-G3 机密性 & SM4-CBC 加密存储 & 传输加密+明文存储 & 传输加密+明文存储 & 加密存储（可选） \\
-G4 完整性 & SM3+Merkle & 无验证机制 & 无验证机制 & 无 Merkle \\
-G5 可溯源 & 条件溯源+审批 & 实名直接查询 & 不可溯源 & 群管理员打开 \\
-G6 抗滥用 & 验证码+设备限流 & 无反注册机制 & 无反注册机制 & 群成员管理 \\
-G7 隐私最小化 & hash-only 审计 & 管理员全量可见 & 管理员全量可见 & 管理员条件打开 \\
-系统原型 & ✅ 已实现 & ✅ 商业运行 & ✅ 通用实现 & ❌ 仅理论方案 \\
+G1 匿名性 & PID强匿名 & 虚拟号码（弱） & 无匿名 & 签名匿名 \\
+G2 认证性 & HMAC-SM3 & 无凭证认证 & 无认证 & 群签名认证 \\
+G3 机密性 & SM4-CBC加密 & 传输加密+明文 & 传输加密+明文 & 加密（可选） \\
+G4 完整性 & SM3+Merkle & 无验证 & 无验证 & 无Merkle \\
+G5 可溯源 & 条件溯源 & 实名查询 & 不可溯源 & 群管理打开 \\
+G6 抗滥用 & 验证码+限流 & 无机制 & 无机制 & 群成员管理 \\
+G7 隐私最小化 & hash-only & 全量可见 & 全量可见 & 条件打开 \\
+系统原型 & 已实现 & 商业运行 & 通用实现 & 仅理论 \\
 \hline
 \end{tabular}
 \end{table}
