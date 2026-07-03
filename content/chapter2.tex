@@ -1,234 +1,29 @@
 % !TEX root = ../main.tex
+%
+% 第二章 预备知识
+% 每个 subsection 对应 chapter2/ 目录下的独立文件，图片文件也在 chapter2/ 目录中。
+%
 \section{预备知识}
 
 本章围绕 FoodShield 系统设计中所涉及的核心技术进行介绍，主要包括 HMAC 消息认证码、SM3 密码杂凑算法、SM4 对称加密算法、PID 匿名身份机制、WebSocket 实时通信机制、Merkle Tree 完整性验证机制以及条件溯源与可控匿名模型。上述技术共同支撑了本作品在外卖订单通信场景下的身份匿名、订单认证、消息保护、日志审计和异常追责等安全目标。其中，SM3 和 SM4 算法均为我国商用密码标准算法，分别遵循 GB/T 32905-2016 和 GB/T 32907-2016 国家标准；HMAC 机制遵循 RFC 2104 规范；WebSocket 协议遵循 RFC 6455 规范。
 
-\subsection{HMAC 消息认证码}
+% 2.1 HMAC 消息认证码
+\input{content/chapter2/sec1_hmac}
 
-HMAC（Hash-based Message Authentication Code）是一种基于密码杂凑函数和共享密钥构造的消息认证码机制，由 Bellare、Canetti 和 Krawczyk 于 1996 年提出，并于 1997 年标准化为 RFC 2104\footnote{Bellare, M., Canetti, R., Krawczyk, H. "Keyed-Hashing for Message Authentication." RFC 2104, IETF, 1997.}。与单纯的哈希运算不同，HMAC 在计算过程中引入了密钥，因此不仅能够检测消息内容是否被篡改，还能够验证消息是否由持有合法密钥的一方生成。HMAC 通常用于身份认证、接口鉴权、请求防伪造和数据完整性校验等场景。
+% 2.2 SM3 密码杂凑算法
+\input{content/chapter2/sec2_sm3}
 
-设 $H$ 表示密码杂凑函数，$K$ 表示共享密钥，$m$ 表示待认证消息，则 HMAC 的一般形式可以表示为：
+% 2.3 SM4 对称加密算法
+\input{content/chapter2/sec3_sm4}
 
-\begin{equation}
-\operatorname{HMAC}(K,m)=H\bigl((K' \oplus \mathit{opad})\parallel H((K' \oplus \mathit{ipad})\parallel m)\bigr)
-\end{equation}
+% 2.4 PID 匿名身份机制
+\input{content/chapter2/sec4_pid}
 
-其中，$K'$ 表示经过填充或压缩处理后的密钥（若密钥长度小于杂凑函数的分组长度，则在右侧填充零；若大于分组长度，则先对密钥计算一次杂凑值），$\mathit{opad}$（outer pad）和 $\mathit{ipad}$（inner pad）分别表示外部填充值和内部填充值，$\parallel$ 表示字符串连接操作，$\oplus$ 表示按位异或。对于输出 256 bit 摘要的杂凑函数（如 SM3），$\mathit{ipad}$ 为字节 0x36 重复 32 次构成的 512 bit 序列，$\mathit{opad}$ 为字节 0x5C 重复 32 次构成的 512 bit 序列。
+% 2.5 WebSocket 实时通信机制
+\input{content/chapter2/sec5_websocket}
 
-HMAC 的安全性取决于底层杂凑函数的性质和密钥的保密性。在形式化安全分析中，HMAC 的安全性通常以\textbf{选择消息攻击下的存在性不可伪造性}（Existential Unforgeability under Chosen-Message Attack, EUF-CMA）来刻画：对于概率多项式时间的攻击者 $\mathcal{A}$，若其不知道密钥 $K$，但在可以查询任意消息 $m_i$ 对应的 $\operatorname{HMAC}(K, m_i)$ 的条件下，仍然难以构造出一个未查询过的消息 $m^*$ 的合法认证码 $\operatorname{HMAC}(K, m^*)$，则称该 HMAC 方案满足 EUF-CMA 安全性。当底层杂凑函数满足抗碰撞性和伪随机函数性质时，HMAC 的安全性可以归约到杂凑函数的安全性质上。
+% 2.6 Merkle Tree 完整性验证
+\input{content/chapter2/sec6_merkle}
 
-\input{content/chapter2/fig_hmac}
-
-在 FoodShield 系统中，HMAC 主要用于订单 Token 的生成与验证。用户在创建订单后，平台服务器根据订单号、匿名身份标识、时间戳和随机数等字段生成订单认证 Token。用户进入订单通信通道时需要提交订单号和 Token，服务器重新计算并比对 Token，以判断用户是否为该订单的合法参与方。该机制使用户能够在不直接暴露真实身份的情况下证明自己拥有订单通信资格。
-
-本系统中订单 Token 的抽象形式如下：
-
-\begin{equation}
-m_{\mathrm{order}} = \mathit{orderID} \parallel \mathit{PID} \parallel \mathit{timestamp} \parallel \mathit{nonce}
-\end{equation}
-
-\begin{equation}
-\mathrm{token} = \operatorname{HMAC}(K_{\mathrm{order}},\, m_{\mathrm{order}})
-\end{equation}
-
-其中，$K_{\mathrm{order}}$ 为订单认证密钥，$\mathit{orderID}$ 为订单编号，$\mathit{PID}$ 为用户匿名身份标识，$\mathit{timestamp}$ 为时间戳，$\mathit{nonce}$ 为 128 bit 随机数。通过引入时间戳和随机数，可以降低 Token 被重放利用的风险——即使攻击者截获了某次通信的 Token，由于时间戳的时效性约束和随机数的不可预测性，该 Token 也无法在其他订单或其他时间窗口中被成功复用。通过绑定订单号与匿名身份标识，可以防止攻击者将一个订单的认证凭证迁移到其他订单中使用。
-
-\subsection{SM3 密码杂凑算法}
-
-SM3 是我国商用密码标准中的密码杂凑算法，于 2016 年作为国家标准 GB/T 32905-2016 发布\footnote{GB/T 32905-2016《信息安全技术\ SM3密码杂凑算法》，国家标准化管理委员会，2016年8月29日发布，2017年3月1日实施。}。SM3 的输出长度固定为 256 bit，分组长度为 512 bit，采用 Merkle--Damg\r{a}rd 迭代结构，共执行 64 轮压缩运算。SM3 主要用于数据完整性校验、数字签名、消息认证码构造和随机数生成等场景，已成为我国金融、政务、电力等关键信息基础设施中广泛部署的国密算法之一。
-
-设 $m$ 表示输入消息，SM3 的输出可以表示为：
-
-\begin{equation}
-h = \operatorname{SM3}(m)
-\end{equation}
-
-其中，$h$ 为长度为 256 bit 的消息摘要。SM3 的压缩函数将 256 bit 的中间状态值和 512 bit 的消息分组作为输入，通过 64 轮混合运算（包括消息扩展、布尔函数、模加运算和循环移位等操作）输出新的 256 bit 状态值。由于摘要长度固定，SM3 适合用于对任意长度数据生成紧凑的完整性标识。
-
-密码杂凑函数的安全性通常以以下三个性质来刻画：
-
-\begin{itemize}[leftmargin=2em]
-\item \textbf{抗原像性（Preimage Resistance）}：给定哈希值 $h$，难以找到任意消息 $m$ 使得 $\operatorname{SM3}(m) = h$。对于 256 bit 输出的杂凑函数，暴力搜索的复杂度为 $O(2^{256})$。
-\item \textbf{抗第二原像性（Second Preimage Resistance）}：给定消息 $m_1$，难以找到另一个不同的消息 $m_2 \neq m_1$ 使得 $\operatorname{SM3}(m_1) = \operatorname{SM3}(m_2)$。暴力搜索的复杂度为 $O(2^{256})$。
-\item \textbf{抗碰撞性（Collision Resistance）}：难以找到任意两个不同的消息 $m_1 \neq m_2$ 使得 $\operatorname{SM3}(m_1) = \operatorname{SM3}(m_2)$。根据生日攻击，寻找碰撞的复杂度为 $O(2^{128})$。
-\end{itemize}
-
-上述三个性质为 FoodShield 系统的安全机制提供了理论基础：抗原像性保证攻击者无法从消息摘要逆推原始消息内容；抗第二原像性保证攻击者无法为已有消息构造具有相同摘要的替代消息；抗碰撞性则是 Merkle Tree 完整性验证的安全基础——只要攻击者无法找到 SM3 碰撞，就无法在不改变 Merkle Root 的前提下篡改任意叶子节点。
-
-在 FoodShield 系统中，SM3 主要用于三个方面。第一，SM3 可作为 HMAC 的底层杂凑函数，用于构造 HMAC-SM3 订单认证 Token。第二，系统可以对通信消息、密文内容、订单编号、发送方角色、时间戳等字段计算消息摘要，作为日志完整性验证的基础。第三，系统可以对 PID、设备标识等敏感字段进行摘要化处理，使管理员端在默认情况下只看到摘要值，而不直接接触敏感原始信息。
-
-例如，对一条订单通信消息，可以将其摘要定义为：
-
-\begin{equation}
-\mathit{message}_{\mathit{hash}} = \operatorname{SM3}(\mathit{orderID} \parallel \mathit{senderRole} \parallel \mathit{timestamp} \parallel \mathit{ciphertext})
-\end{equation}
-
-其中，$\mathit{senderRole}$ 表示发送方角色，$\mathit{ciphertext}$ 表示加密后的消息内容。只要消息内容、订单号、发送方角色或时间戳发生变化，重新计算得到的摘要值就会发生显著变化（雪崩效应）。因此，消息摘要可以作为后续 Merkle Tree 日志完整性验证的基本单元。
-
-\subsection{SM4 对称加密算法}
-
-SM4 是我国商用密码标准中的分组对称加密算法，于 2016 年作为国家标准 GB/T 32907-2016 发布\footnote{GB/T 32907-2016《信息安全技术\ SM4分组密码算法》，国家标准化管理委员会，2016年8月29日发布，2017年3月1日实施。}。SM4 的分组长度为 128 bit，密钥长度为 128 bit，采用 32 轮非平衡 Feistel 结构，每轮使用相同的轮函数但以不同的轮密钥进行运算。SM4 的加密和解密使用相同的算法结构，区别仅在于轮密钥的使用顺序相反。对称加密算法的特点是加密和解密使用相同密钥，具有计算效率高、适合批量数据加密等优点，常用于通信数据保护、数据库字段加密和文件加密等场景。
-
-设 $K$ 表示对称加密密钥，$M$ 表示明文消息，$C$ 表示密文消息，则 SM4 加密与解密过程可以抽象表示为：
-
-\begin{equation}
-C = \operatorname{Enc}_{K}(M)
-\end{equation}
-
-\begin{equation}
-M = \operatorname{Dec}_{K}(C)
-\end{equation}
-
-SM4 的轮函数由以下组件构成：输入分组的 4 个 32 bit 字中，第一个字与其余三个字经轮函数 $F$ 处理后异或，再与轮密钥结合，生成下一轮的输入。轮函数 $F$ 中包含一个 8 bit 输入/8 bit 输出的 S 盒（非线性置换）和一个线性变换 $L$（由循环移位和异或组成）。密钥扩展算法使用与加密算法类似的结构，将 128 bit 主密钥扩展为 32 个 32 bit 轮密钥。
-
-在实际系统中，SM4 通常需要结合工作模式使用，以处理长度大于一个分组的数据并增强安全性。常见的工作模式包括：
-
-\begin{itemize}[leftmargin=2em]
-\item \textbf{ECB（Electronic Codebook）模式}：每个分组独立加密，相同明文分组产生相同密文，不适合加密结构化数据。
-\item \textbf{CBC（Cipher Block Chaining）模式}：每个明文分组在加密前先与前一个密文分组异或，引入初始化向量 $IV$ 使相同明文在不同加密过程中得到不同密文，安全性优于 ECB 模式。
-\item \textbf{CTR（Counter）模式}：将递增计数器作为加密输入，输出与明文异或得到密文，支持并行加密。
-\item \textbf{GCM（Galois/Counter Mode）模式}：在 CTR 模式基础上增加认证标签，同时提供加密和完整性保护。
-\end{itemize}
-
-以 CBC 模式为例，加密时需要引入初始化向量 $IV$，使相同明文在不同加密过程中得到不同密文，从而降低明文模式泄露风险。其抽象形式如下：
-
-\begin{equation}
-C = \operatorname{SM4\text{-}CBC\text{-}Enc}_{K}(IV, M)
-\end{equation}
-
-具体而言，CBC 模式的加密过程为：$C_0 = IV$，$C_i = \operatorname{Enc}_K(M_i \oplus C_{i-1})$，其中 $M_i$ 和 $C_i$ 分别表示第 $i$ 个明文分组和密文分组。解密过程为：$M_i = \operatorname{Dec}_K(C_i) \oplus C_{i-1}$。由于每个分组的加密都依赖于前一个密文分组，攻击者无法仅通过替换某个密文分组来篡改对应的明文而不影响后续分组的解密结果。
-
-\input{content/chapter2/fig_sm4_cbc}
-
-在 FoodShield 系统中，SM4 主要用于订单通信消息的加密存储。用户与骑手之间的消息经过服务器处理后，使用订单级会话密钥或平台侧加密密钥进行加密，再写入数据库。管理员端默认不直接展示消息明文，而是展示消息哈希、时间戳、订单号和 Merkle Root 等审计信息。这样可以降低数据库泄露或管理员越权查看造成的隐私风险。
-
-需要说明的是，本作品原型系统以可运行、可展示和安全机制闭环为主要目标。在实际部署环境中，通信链路还应结合 HTTPS/TLS 保障传输安全，SM4 更多用于服务端存储阶段的消息内容保护。通过"传输层加密 + 存储层加密 + 日志哈希审计"的组合设计，可以从多个层面降低订单通信数据泄露和篡改风险。
-
-\subsection{PID 匿名身份机制}
-
-PID（Pseudonymous Identifier）即伪身份标识或匿名身份标识，是隐私保护系统中常用的一种身份解耦机制。其核心思想是：系统内部不直接使用真实用户身份参与通信和认证，而是为用户生成一个与真实身份存在受控映射关系的匿名标识。在日常业务过程中，通信参与方只能看到订单相关信息或匿名身份信息，不能直接获得用户真实身份。
-
-在 FoodShield 系统中，用户注册后由平台服务器生成 PID。PID 由主密钥、用户真实标识、随机数和设备摘要等字段通过 HMAC 机制生成，其抽象形式如下：
-
-\begin{equation}
-\mathrm{PID}=\operatorname{HMAC}(K_{\mathrm{master}},\, \mathit{userID} \parallel r)
-\end{equation}
-
-其中，$K_{\mathrm{master}}$ 为平台主密钥，$\mathit{userID}$ 为用户真实身份标识，$r$ 为随机数。引入随机数 $r$ 的作用在于实现\textbf{跨订单不可链接性}（Cross-Order Unlinkability）：即使同一用户在不同订单中使用 PID，由于每次生成的随机数不同，攻击者无法通过比较 PID 值来判断两个订单是否属于同一用户。这一性质对于防止跨订单的用户画像构建和身份关联攻击具有重要意义。
-
-PID 的安全性可以从以下两个角度分析：
-
-\begin{itemize}[leftmargin=2em]
-\item \textbf{不可逆性}：由于 PID 基于 HMAC-SM3 生成，而 HMAC 的输出在不知道密钥 $K_{\mathrm{master}}$ 的情况下无法逆推出输入 $\mathit{userID} \parallel r$，因此攻击者即使获取了 PID，也无法直接恢复用户的真实身份。该性质基于 SM3 的抗原像性和 HMAC 的 EUF-CMA 安全性。
-\item \textbf{不可链接性}：由于每次 PID 生成引入了不同的随机数 $r$，即使攻击者获取了同一用户的多个 PID，也无法判断这些 PID 是否指向同一用户。该性质基于 HMAC 输出的伪随机性。
-\end{itemize}
-
-PID 的作用不是取代用户登录身份，而是在订单通信过程中隐藏真实身份。用户在系统中仍然需要通过用户名、口令和设备识别等方式完成正常登录；登录成功后，系统在内部使用 PID 与订单进行绑定。骑手端只需要知道订单编号、订单状态和必要配送信息，不应看到用户真实身份，也不应直接看到 PID。管理员端默认也不直接展示 PID，而是展示经过摘要化处理的 PID 哈希值。
-
-因此，FoodShield 中 PID 的设计原则可以概括为三点。第一，PID 是系统内部匿名标识，不作为普通前端页面中的公开身份展示。第二，PID 与真实身份之间的映射关系只能由平台服务器在受控条件下查询。第三，当发生投诉、恶意骚扰、纠纷处理或审计需求时，系统可以通过条件溯源流程恢复必要身份信息，从而实现隐私保护与责任追踪之间的平衡。
-
-\subsection{WebSocket 实时通信机制}
-
-WebSocket 是一种基于 TCP 的全双工通信协议，由 Fette 和 Melnikov 于 2011 年标准化为 RFC 6455\footnote{Fette, I., Melnikov, A. "The WebSocket Protocol." RFC 6455, IETF, 2011.}。与传统的 HTTP 通信采用"客户端请求、服务器响应"的模式不同，WebSocket 在客户端与服务器建立连接后，可以在同一连接上进行双向、全双工的实时数据交互，因此常用于在线聊天、实时通知、协同编辑和数据监控等场景。
-
-WebSocket 通信的一般过程包括连接建立、身份认证、消息发送、消息转发和连接关闭五个阶段。在连接建立阶段，客户端首先向服务器发送 HTTP 升级请求（Upgrade: websocket），服务器返回 101 Switching Protocols 响应后双方建立 WebSocket 长连接。此后，客户端和服务器可以在该连接上持续交换数据帧（Data Frame），而不需要为每条消息重新建立 HTTP 请求。这一机制显著降低了通信延迟和带宽开销，适合需要频繁消息交互的实时场景。
-
-在 FoodShield 系统中，WebSocket 用于实现用户端与骑手端之间的订单级实时通信。系统以订单号为基本单位建立通信房间，每个订单对应一个独立的通信通道。用户或骑手进入通信房间前，服务器需要验证其身份状态和订单参与资格。对于用户端，服务器需要校验订单号和 Token；对于骑手端，服务器需要校验其是否为该订单绑定的配送方。只有验证通过的参与方才能加入对应订单房间。
-
-订单通信过程可以抽象为：
-
-\begin{equation}
-\mathit{Client} \xrightarrow{\mathit{orderID},\, \mathit{credential}} \mathit{Server}
-\end{equation}
-
-\begin{equation}
-\mathit{Server} \xrightarrow{\operatorname{verify}(\mathit{orderID},\, \mathit{credential})} \mathit{Room}(\mathit{orderID})
-\end{equation}
-
-\begin{equation}
-\mathit{Message} \xrightarrow{\operatorname{forward}} \mathit{User}/\mathit{Rider}
-\end{equation}
-
-其中，$\mathit{credential}$ 表示订单认证凭证（即 Token）或骑手身份凭证。服务器在转发消息的同时，对消息进行加密存储、哈希计算和日志记录，使通信功能与安全审计机制形成联动。
-
-\input{content/chapter2/fig_websocket_seq}
-
-需要指出的是，WebSocket 协议本身主要解决实时通信的连接管理问题，并不直接提供消息加密、身份认证或日志完整性保护等安全功能。因此，在实际应用中，WebSocket 应结合 TLS 形成 WSS（WebSocket Secure）安全连接，以防止通信内容在传输过程中被窃听或篡改。本作品在系统设计中将 WebSocket 作为实时消息通道，将 Token 认证、消息加密、哈希审计和权限控制作为安全增强机制，从而避免将普通聊天功能误认为完整安全机制。
-
-\subsection{Merkle Tree 完整性验证}
-
-Merkle Tree 是一种基于哈希函数构造的树形数据完整性验证结构，又称哈希树，由 Ralph Merkle 于 1979 年提出\footnote{Merkle, R. C. "A Certified Digital Signature." In \textit{Advances in Cryptology -- CRYPTO '89 Proceedings}, Lecture Notes in Computer Science, vol. 435, pp. 218--238, Springer, 1989. 原始构思参见 Merkle, R. C. "Secrecy, Authentication, and Public Key Systems." Technical Report, Stanford University, 1979.}。其基本思想是：先对每个数据块计算哈希值，作为叶子节点；再将相邻节点哈希拼接后继续计算父节点哈希；最终逐层向上计算得到根节点哈希，即 Merkle Root。只要任意一个叶子节点对应的数据发生变化，最终计算得到的 Merkle Root 就会发生变化。因此，Merkle Tree 广泛应用于区块链、文件完整性验证、日志审计和分布式存储等场景。
-
-设系统中共有 $n$ 条消息日志，分别为 $m_1, m_2, \cdots, m_n$，对应叶子节点可以表示为：
-
-\begin{equation}
-\mathit{leaf}_i = H(m_i), \quad i = 1, 2, \cdots, n
-\end{equation}
-
-相邻两个叶子节点进一步计算父节点：
-
-\begin{equation}
-\mathit{parent}_{i,j} = H(\mathit{leaf}_i \parallel \mathit{leaf}_j)
-\end{equation}
-
-逐层向上递归计算，最终得到根节点：
-
-\begin{equation}
-\mathit{root} = \operatorname{MerkleRoot}(\mathit{leaf}_1, \mathit{leaf}_2, \cdots, \mathit{leaf}_n)
-\end{equation}
-
-\input{content/chapter2/fig_merkle_tree}
-
-Merkle Tree 的一个重要优势是支持高效的\textbf{包含证明}（Inclusion Proof）：要验证某个叶子节点 $\mathit{leaf}_i$ 是否包含在以 $\mathit{root}$ 为根的 Merkle Tree 中，验证者只需知道从 $\mathit{leaf}_i$ 到 $\mathit{root}$ 路径上的兄弟节点哈希值（即验证路径），即可通过 $O(\log n)$ 次哈希计算完成验证，而无需获取全部 $n$ 个叶子节点。这一性质使得 Merkle Tree 在大规模数据集的完整性验证中具有显著的效率优势。
-
-在 FoodShield 系统中，Merkle Tree 用于订单通信日志的完整性验证。系统并不直接将明文消息作为叶子节点，而是将与消息相关的摘要信息作为叶子节点输入。为了绑定订单上下文、发送方角色、消息顺序和密文内容，本系统中单条消息日志的叶子节点可以抽象定义为：
-
-\begin{equation}
-\mathit{leaf}_i = \operatorname{SM3}(\mathit{orderID} \parallel \mathit{msgSeq} \parallel \mathit{senderRole} \parallel \mathit{timestamp} \parallel \mathit{ciphertextHash} \parallel \mathit{prevHash})
-\end{equation}
-
-其中，各字段含义如下：
-
-\begin{itemize}[leftmargin=2em]
-\item $\mathit{orderID}$：订单编号，将叶子节点绑定到特定订单，防止跨订单拼接攻击。
-\item $\mathit{msgSeq}$：消息序号，记录消息在订单通信中的顺序，可检测消息重排和删除。
-\item $\mathit{senderRole}$：发送方角色（用户或骑手），防止发送方身份伪造。
-\item $\mathit{timestamp}$：发送时间戳，提供时间维度的可验证性。
-\item $\mathit{ciphertextHash}$：消息密文摘要，绑定消息内容，检测内容篡改。
-\item $\mathit{prevHash}$：前一条消息日志的摘要，形成链式结构，可检测消息插入和删除。
-\end{itemize}
-
-该设计通过将多个上下文字段绑定到叶子节点中，能够同时检测消息内容篡改、消息顺序调整、消息插入和消息删除等异常情况。与仅对密文计算哈希的简单方案相比，本方案的叶子节点结构提供了更细粒度的完整性保护。
-
-为了保证 Merkle Root 的可验证性，系统采用快照机制保存 Root。每当订单通信结束、管理员手动生成审计快照或消息数量达到设定阈值时，系统对当前订单的消息日志集合计算 Merkle Root，并将订单号、消息数量、Root 值和快照时间写入日志快照表。后续进行完整性验证时，系统重新读取订单消息日志并计算新的 Root，与历史快照中的 Root 进行比较。如果二者一致，说明当前日志集合与快照生成时保持一致；如果二者不一致，则说明日志可能被修改、删除、插入或重排。
-
-因此，Merkle Tree 在本系统中的作用不是加密消息内容，而是提供日志完整性证明。它可以使平台在发生纠纷时证明通信记录是否被篡改，从而提升订单通信记录的可信度和审计价值。
-
-\subsection{条件溯源与可控匿名模型}
-
-匿名机制能够保护用户隐私，但完全匿名也可能导致恶意行为难以追责。在外卖订单通信场景中，用户和骑手之间可能发生恶意骚扰、虚假投诉、配送纠纷或违规沟通等情况。如果系统只强调匿名而不保留治理能力，平台将难以处理异常事件；如果系统默认暴露真实身份，则又会削弱隐私保护效果。因此，本作品采用条件溯源与可控匿名相结合的设计思路。
-
-\textbf{可控匿名}（Controllable Anonymity）是指系统在正常业务流程中隐藏用户真实身份，而在满足特定条件时，由具备权限的管理方按照审计流程恢复必要身份信息。该模型强调"日常匿名、异常可追责"。可控匿名区别于完全匿名（如 Tor）和完全实名两种极端模式，在隐私保护与责任追踪之间寻求平衡。
-
-在 FoodShield 系统中，普通通信状态下，骑手端无法看到用户真实身份，也无法看到用户 PID；管理员端默认只查看订单摘要、消息哈希、Merkle Root 和完整性验证结果。当发生投诉、纠纷或平台审计需求时，用户或骑手可以基于订单号提交溯源申请，管理员经过身份认证和权限校验后，才能触发条件溯源流程。
-
-条件溯源流程可以抽象为：
-
-\begin{equation}
-\mathit{orderID} \xrightarrow{\operatorname{verify\text{-}integrity}} \mathit{PID} \xrightarrow{\operatorname{lookup}} \mathit{userID}
-\end{equation}
-
-其中，$\mathit{orderID}$ 是业务入口，$\mathit{PID}$ 是系统内部匿名标识，$\mathit{userID}$ 是真实用户身份标识。系统不鼓励管理员直接通过 PID 发起溯源，而是以订单号作为溯源入口。这种方式更符合外卖平台的真实业务逻辑（投诉和纠纷通常以订单为单位发起），也可以降低 PID 被滥用或过度暴露的风险。
-
-条件溯源流程包含两个关键安全约束：
-
-\begin{itemize}[leftmargin=2em]
-\item \textbf{完整性前置校验}：在执行溯源之前，系统必须先对目标订单的通信日志进行 Merkle Tree 完整性验证。只有当日志完整性验证通过时，才允许继续溯源流程。这一约束确保了溯源所依据的通信记录未被篡改，防止攻击者通过篡改日志来误导溯源结果。
-\item \textbf{关键词条件触发}：溯源过程通常由投诉或举报触发，系统根据投诉内容中的关键词进行命中匹配，确认是否存在异常通信行为。只有当关键词命中且完整性校验通过时，才执行从 $\mathit{orderID}$ 到 $\mathit{userID}$ 的身份映射。这一双重门槛机制防止管理员滥用溯源权限进行无依据的身份查询。
-\end{itemize}
-
-在条件溯源过程中，系统应记录管理员的关键操作，包括登录行为、查看订单摘要、执行完整性验证、确认溯源申请和查询身份映射等。每一次溯源操作都应写入审计日志，记录操作者、操作时间、目标订单、溯源理由和操作结果。通过这种方式，系统不仅可以追踪用户或骑手的异常行为，也可以约束管理员权限，避免审计能力本身成为新的隐私风险。
-
-\input{content/chapter2/fig_trace_concept}
-
-综上，条件溯源与可控匿名模型是 FoodShield 系统区别于普通匿名通信系统的重要设计。它既避免了普通外卖聊天系统中过度暴露身份的问题，也避免了完全匿名系统中责任主体无法追踪的问题，从而在隐私保护、订单认证和平台治理之间形成平衡。
+% 2.7 条件溯源与可控匿名模型
+\input{content/chapter2/sec7_trace}

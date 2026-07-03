@@ -1,0 +1,25 @@
+% !TEX root = ../../main.tex
+\subsection{测试环境}
+
+FoodShield 系统的测试环境配置如表~\ref{tab:test_env}所示。所有测试均基于 Flask 内置测试客户端完成，使用独立的临时数据库，不修改演示数据库，确保测试结果的可复现性和数据隔离性。
+
+\begin{table}[H]
+\centering
+\caption{测试环境配置}
+\label{tab:test_env}
+\begin{tabular}{ll}
+\hline
+\textbf{项目} & \textbf{配置} \\
+\hline
+操作系统 & Arch Linux（WSL2，Kernel 6.18.33.1） \\
+CPU & Intel i5-13420H（WSL2 分配 2 核 4 线程，2.611\,GHz） \\
+内存 & 7.8\,GiB \\
+Python 版本 & 3.13 \\
+国密算法库 & gmssl \\
+数据库 & SQLite 3 \\
+测试框架 & Flask test client（隔离数据库） \\
+\hline
+\end{tabular}
+\end{table}
+
+测试方法分三类：功能测试（正向调用各业务接口验证流程正确性）、安全测试（攻击演示脚本 \texttt{attack\_demo.py} 模拟各类威胁场景）、性能测试（基准脚本在不同数据规模下收集关键路径耗时）。

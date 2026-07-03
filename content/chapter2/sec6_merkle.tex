@@ -1,0 +1,48 @@
+\subsection{Merkle Tree 完整性验证}
+
+Merkle Tree 是一种基于哈希函数构造的树形数据完整性验证结构，又称哈希树，由 Ralph Merkle 于 1979 年提出\footnote{Merkle, R. C. "A Certified Digital Signature." In \textit{Advances in Cryptology -- CRYPTO '89 Proceedings}, Lecture Notes in Computer Science, vol. 435, pp. 218--238, Springer, 1989. 原始构思参见 Merkle, R. C. "Secrecy, Authentication, and Public Key Systems." Technical Report, Stanford University, 1979.}。其基本思想是：先对每个数据块计算哈希值，作为叶子节点；再将相邻节点哈希拼接后继续计算父节点哈希；最终逐层向上计算得到根节点哈希，即 Merkle Root。只要任意一个叶子节点对应的数据发生变化，最终计算得到的 Merkle Root 就会发生变化。因此，Merkle Tree 广泛应用于区块链、文件完整性验证、日志审计和分布式存储等场景。
+
+设系统中共有 $n$ 条消息日志，分别为 $m_1, m_2, \cdots, m_n$，对应叶子节点可以表示为：
+
+\begin{equation}
+\mathit{leaf}_i = H(m_i), \quad i = 1, 2, \cdots, n
+\end{equation}
+
+相邻两个叶子节点进一步计算父节点：
+
+\begin{equation}
+\mathit{parent}_{i,j} = H(\mathit{leaf}_i \parallel \mathit{leaf}_j)
+\end{equation}
+
+逐层向上递归计算，最终得到根节点：
+
+\begin{equation}
+\mathit{root} = \operatorname{MerkleRoot}(\mathit{leaf}_1, \mathit{leaf}_2, \cdots, \mathit{leaf}_n)
+\end{equation}
+
+\input{content/chapter2/fig_merkle_tree}
+
+Merkle Tree 的一个重要优势是支持高效的\textbf{包含证明}（Inclusion Proof）：要验证某个叶子节点 $\mathit{leaf}_i$ 是否包含在以 $\mathit{root}$ 为根的 Merkle Tree 中，验证者只需知道从 $\mathit{leaf}_i$ 到 $\mathit{root}$ 路径上的兄弟节点哈希值（即验证路径），即可通过 $O(\log n)$ 次哈希计算完成验证，而无需获取全部 $n$ 个叶子节点。这一性质使得 Merkle Tree 在大规模数据集的完整性验证中具有显著的效率优势。
+
+在 FoodShield 系统中，Merkle Tree 用于订单通信日志的完整性验证。系统并不直接将明文消息作为叶子节点，而是将与消息相关的摘要信息作为叶子节点输入。为了绑定订单上下文、发送方角色、消息顺序和密文内容，本系统中单条消息日志的叶子节点可以抽象定义为：
+
+\begin{equation}
+\mathit{leaf}_i = \operatorname{SM3}(\mathit{orderID} \parallel \mathit{msgSeq} \parallel \mathit{senderRole} \parallel \mathit{timestamp} \parallel \mathit{ciphertextHash} \parallel \mathit{prevHash})
+\end{equation}
+
+其中，各字段含义如下：
+
+\begin{itemize}[leftmargin=2em]
+\item $\mathit{orderID}$：订单编号，将叶子节点绑定到特定订单，防止跨订单拼接攻击。
+\item $\mathit{msgSeq}$：消息序号，记录消息在订单通信中的顺序，可检测消息重排和删除。
+\item $\mathit{senderRole}$：发送方角色（用户或骑手），防止发送方身份伪造。
+\item $\mathit{timestamp}$：发送时间戳，提供时间维度的可验证性。
+\item $\mathit{ciphertextHash}$：消息密文摘要，绑定消息内容，检测内容篡改。
+\item $\mathit{prevHash}$：前一条消息日志的摘要，形成链式结构，可检测消息插入和删除。
+\end{itemize}
+
+该设计通过将多个上下文字段绑定到叶子节点中，能够同时检测消息内容篡改、消息顺序调整、消息插入和消息删除等异常情况。与仅对密文计算哈希的简单方案相比，本方案的叶子节点结构提供了更细粒度的完整性保护。
+
+为了保证 Merkle Root 的可验证性，系统采用快照机制保存 Root。每当订单通信结束、管理员手动生成审计快照或消息数量达到设定阈值时，系统对当前订单的消息日志集合计算 Merkle Root，并将订单号、消息数量、Root 值和快照时间写入日志快照表。后续进行完整性验证时，系统重新读取订单消息日志并计算新的 Root，与历史快照中的 Root 进行比较。如果二者一致，说明当前日志集合与快照生成时保持一致；如果二者不一致，则说明日志可能被修改、删除、插入或重排。
+
+因此，Merkle Tree 在本系统中的作用不是加密消息内容，而是提供日志完整性证明。它可以使平台在发生纠纷时证明通信记录是否被篡改，从而提升订单通信记录的可信度和审计价值。

@@ -3,39 +3,38 @@
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-  node distance = 0.55cm and 2.4cm,
-  proc/.style     = {rectangle, draw, rounded corners=3pt, minimum width=3.4cm, minimum height=0.65cm,
-                     font=\small, fill=blue!8, draw=blue!50!black},
-  decision/.style = {diamond, draw, aspect=2.2, minimum width=3.4cm, minimum height=0.85cm,
-                     font=\small, align=center, fill=orange!15, draw=orange!60!black, inner sep=2pt},
-  term_ok/.style  = {rectangle, draw, rounded corners=8pt, minimum width=3.0cm, minimum height=0.65cm,
-                     font=\small, fill=green!14, draw=green!50!black},
-  term_fail/.style= {rectangle, draw, rounded corners=8pt, minimum width=3.0cm, minimum height=0.65cm,
-                     font=\small, fill=red!12, draw=red!50!black},
+  node distance = 0.45cm,
+  proc/.style     = {rectangle, draw, rounded corners=3pt, minimum width=4.2cm, minimum height=0.55cm,
+                     font=\footnotesize, fill=blue!8, draw=blue!50!black},
+  decision/.style = {diamond, draw, aspect=2.2, minimum width=2.4cm, minimum height=0.7cm,
+                     font=\footnotesize, align=center, fill=orange!15, draw=orange!60!black, inner sep=1pt},
+  term_ok/.style  = {rectangle, draw, rounded corners=8pt, minimum width=2.4cm, minimum height=0.55cm,
+                     font=\footnotesize, fill=green!14, draw=green!50!black},
+  term_fail/.style= {rectangle, draw, rounded corners=8pt, minimum width=2.8cm, minimum height=0.55cm,
+                     font=\footnotesize, fill=red!12, draw=red!50!black},
   arr/.style      = {-Stealth, thick},
-  lbl/.style      = {font=\small},
+  lbl/.style      = {font=\footnotesize},
 ]
 
-\node[proc]     (read)   {读取 messages 表中消息列表};
-\node[proc,     below=0.6cm of read]    (decrypt) {SM4-CBC 解密，获取明文及密文摘要};
-\node[proc,     below=0.6cm of decrypt] (rehash)  {逐条重算 SM3 摘要作为叶子节点};
-\node[proc,     below=0.6cm of rehash]  (rebuild) {重建 Merkle Tree，计算新 Root'};
-\node[proc,     below=0.6cm of rebuild] (load)    {从 audit\_logs 加载历史快照 Root};
-\node[decision, below=0.8cm of load]    (d_eq)    {Root'\\== Root？};
-\node[term_ok,  right=2.4cm of d_eq]   (ok)      {VERIFY\_OK：日志完整};
-\node[term_fail,left=2.4cm of d_eq]    (fail)    {VERIFY\_FAIL：存在篡改};
-\node[proc,     below=0.9cm of d_eq]   (log)     {写入审计操作日志};
+\node[proc]     (read)   {读取订单消息列表};
+\node[proc,     below=0.45cm of read]    (decrypt) {SM4-CBC 解密 + 获取密文摘要};
+\node[proc,     below=0.45cm of decrypt] (rehash)  {逐条重算 SM3 摘要};
+\node[proc,     below=0.45cm of rehash]  (rebuild) {重建 Merkle Tree $\to$ Root'};
+\node[proc,     below=0.45cm of rebuild] (load)    {加载历史快照 Root};
+\node[decision, below=0.6cm of load]     (d_eq)    {Root'\\== Root？};
+\node[term_ok,  below left=0.6cm and 0.5cm of d_eq]  (ok)      {VERIFY\_OK：日志完整};
+\node[term_fail, below right=0.6cm and 0.5cm of d_eq] (fail)    {VERIFY\_FAIL：存在篡改};
+\node[proc,     below=1.5cm of d_eq]   (log)     {写入审计操作日志};
 
 \draw[arr] (read)    -- (decrypt);
 \draw[arr] (decrypt) -- (rehash);
 \draw[arr] (rehash)  -- (rebuild);
 \draw[arr] (rebuild) -- (load);
 \draw[arr] (load)    -- (d_eq);
-\draw[arr] (d_eq)    -- node[lbl,above]{是} (ok);
-\draw[arr] (d_eq)    -- node[lbl,above]{否} (fail);
-\draw[arr] (d_eq)    -- node[lbl,left]{} (log);
-\draw[arr] (ok.south)   -- ++(0,-0.3) |- (log.east);
-\draw[arr] (fail.south) -- ++(0,-0.3) |- (log.west);
+\draw[arr] (d_eq)    -- node[lbl,left]{是} (ok);
+\draw[arr] (d_eq)    -- node[lbl,right]{否} (fail);
+\draw[arr] (ok.south)   -- ++(0,-0.15) |- (log.west);
+\draw[arr] (fail.south) -- ++(0,-0.15) |- (log.east);
 
 \end{tikzpicture}
 \caption{Merkle 日志完整性验证流程图}

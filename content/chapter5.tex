@@ -1,16 +1,16 @@
 % !TEX root = ../main.tex
+%
+% 第五章 作品测试与分析
+% 每个 subsection 对应 chapter5/ 目录下的独立文件，方便维护和编译定位。
+%
 \section{作品测试与分析}
-（建议包括测试方案、测试环境搭建、测试设备、测试数据、结果分析等）
-\subsection{测试环境}
 
-\subsection{功能测试}
+本章对 FoodShield 系统进行全面测试与分析，验证系统功能完整性、安全机制有效性、日志完整性检测能力、访问控制边界以及关键路径性能。测试内容与第三章威胁模型中定义的各类攻击场景严格对应，旨在证明系统设计中的安全目标在实际实现中得到有效落地。
 
-\subsection{安全性测试}
-
-\subsection{日志篡改检测测试}
-
-\subsection{越权访问测试}
-
-\subsection{性能测试}
-
-\subsection{对比分析}
+\input{content/chapter5/sec1_env}
+\input{content/chapter5/sec2_func}
+\input{content/chapter5/sec3_security}
+\input{content/chapter5/sec4_tamper}
+\input{content/chapter5/sec5_access}
+\input{content/chapter5/sec6_perf}
+\input{content/chapter5/sec7_compare}
