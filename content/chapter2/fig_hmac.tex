@@ -3,10 +3,10 @@
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-  node distance = 0.5cm and 0.8cm,
-  box/.style    = {rectangle, draw, rounded corners=3pt, minimum width=2.0cm, minimum height=0.65cm,
+  node distance = 0.5cm and 0.7cm,
+  box/.style    = {rectangle, draw, rounded corners=3pt, minimum width=1.8cm, minimum height=0.6cm,
                    font=\small, fill=white},
-  op/.style     = {circle, draw, minimum size=0.55cm, font=\small\bfseries, fill=gray!15},
+  op/.style     = {circle, draw, minimum size=0.5cm, font=\small\bfseries, fill=gray!15},
   arr/.style    = {-Stealth, thick},
   lbl/.style    = {font=\small\itshape},
   grn/.style    = {fill=green!12, draw=green!50!black},
@@ -18,53 +18,69 @@
 \node[box, blu] (K) {密钥 $K$};
 
 % 密钥预处理
-\node[box, below=0.7cm of K, blu] (Kp) {$K'$（填充/截断至分组长度）};
+\node[box, blu, below=0.65cm of K] (Kp) {$K'$（填充/截断至分组长度）};
 
-% ipad / opad
-\node[box, left=1.4cm of Kp, orn]  (ipad) {$\mathit{ipad}$};
-\node[box, right=1.4cm of Kp, orn] (opad) {$\mathit{opad}$};
+% ipad / opad（左右对称）
+\node[box, orn, below left=0.8cm and 0.4cm of Kp]  (ipad) {$\mathit{ipad}$};
+\node[box, orn, below right=0.8cm and 0.4cm of Kp] (opad) {$\mathit{opad}$};
 
-% XOR nodes
-\node[op, below=0.6cm of ipad] (xori) {$\oplus$};
-\node[op, below=0.6cm of opad] (xoro) {$\oplus$};
+% XOR nodes（在 ipad/opad 下方）
+\node[op, below=0.55cm of ipad] (xori) {$\oplus$};
+\node[op, below=0.55cm of opad] (xoro) {$\oplus$};
 
-% 消息 m
-\node[box, left=0.9cm of xori, blu] (msg) {消息 $m$};
+% 消息 m（左侧，在 xori 旁边）
+\node[box, blu, left=0.7cm of xori] (msg) {消息 $m$};
 
 % 内层哈希输入拼接
-\node[box, grn, below=0.6cm of xori, minimum width=3.4cm] (inner_in) {$(K' \oplus \mathit{ipad}) \;\|\; m$};
+\node[box, grn, below=0.5cm of xori, minimum width=3.0cm] (inner_in) {$(K' \oplus \mathit{ipad}) \;\|\; m$};
 
 % 内层哈希
-\node[box, grn, below=0.5cm of inner_in] (H1) {$H(\cdot)$（内层哈希）};
+\node[box, grn, below=0.45cm of inner_in] (H1) {$H(\cdot)$（内层哈希）};
 
-% 外层拼接：xoro 结果 || H1 结果
-\node[box, orn, below=0.7cm of H1, minimum width=3.4cm] (outer_in) {$(K' \oplus \mathit{opad}) \;\|\; H(\text{inner})$};
+% 外层拼接
+\node[box, orn, below=0.6cm of H1, minimum width=3.0cm] (outer_in) {$(K' \oplus \mathit{opad}) \;\|\; H(\text{inner})$};
 
 % 外层哈希
-\node[box, orn, below=0.5cm of outer_in] (H2) {$H(\cdot)$（外层哈希）};
+\node[box, orn, below=0.45cm of outer_in] (H2) {$H(\cdot)$（外层哈希）};
 
 % 输出
-\node[box, below=0.5cm of H2, minimum width=2.8cm, fill=red!10, draw=red!50!black] (out) {$\operatorname{HMAC}(K, m)$};
+\node[box, below=0.45cm of H2, minimum width=2.4cm, fill=red!10, draw=red!50!black] (out) {$\operatorname{HMAC}(K, m)$};
 
-% 箭头
-\draw[arr] (K)  -- (Kp);
-\draw[arr] (Kp) -- (ipad);
-\draw[arr] (Kp) -- (opad);
-\draw[arr] (Kp) -- (xori);
-\draw[arr] (Kp) -- (xoro);
+% 箭头：K → Kp
+\draw[arr] (K) -- (Kp);
+
+% 箭头：Kp → ipad, Kp → opad（分支）
+\draw[arr] (Kp.south west) -- (ipad.north);
+\draw[arr] (Kp.south east) -- (opad.north);
+
+% 箭头：Kp → xori（从 Kp 左侧绕行，不穿越 ipad）
+\draw[arr] (Kp.west) -- ++(-0.35,0) |- (xori.north);
+
+% 箭头：Kp → xoro（从 Kp 右侧绕行，不穿越 opad）
+\draw[arr] (Kp.east) -- ++(0.35,0) |- (xoro.north);
+
+% 箭头：ipad → xori, opad → xoro
 \draw[arr] (ipad) -- (xori);
 \draw[arr] (opad) -- (xoro);
-\draw[arr] (msg)  -- (xori);
+
+% 箭头：msg → xori
+\draw[arr] (msg) -- (xori);
+
+% 箭头：内层流程
 \draw[arr] (xori) -- (inner_in);
 \draw[arr] (inner_in) -- (H1);
 \draw[arr] (H1) -- (outer_in);
-\draw[arr] (xoro.south) -- ++(0,-0.3) -| (outer_in.north);
+
+% 箭头：xoro → outer_in（从右侧绕行）
+\draw[arr] (xoro.south) -- ++(0,-0.25) -| (outer_in.north east);
+
+% 箭头：外层流程
 \draw[arr] (outer_in) -- (H2);
 \draw[arr] (H2) -- (out);
 
 % 注释
-\node[lbl, right=0.2cm of xori] {内层混合};
-\node[lbl, right=0.2cm of H2]   {外层混合};
+\node[lbl, right=0.15cm of xori] {内层混合};
+\node[lbl, right=0.15cm of H2]   {外层混合};
 
 \end{tikzpicture}
 \caption{HMAC 双层嵌套哈希结构}

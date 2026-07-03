@@ -1,0 +1,32 @@
+% !TEX root = ../../main.tex
+\subsection{越权访问测试}
+
+本节验证系统三层访问控制边界的严格执行能力。部分场景与 5.3 节安全测试重叠（S03 跨用户越权、S07 管理员越权），此处补充骑手越权和审计日志细节。
+
+\textbf{用户越权}：用户 alice 尝试查看非本人订单的消息历史，后端校验 session 中 \texttt{user\_id} 与订单归属不一致，返回 403。
+
+\textbf{骑手越权}：非接单骑手尝试进入订单房间发送消息或查看通信记录，后端校验 \texttt{rider\_id} 不一致，返回 403。
+
+\textbf{管理员越权}：未登录用户访问管理员审计接口，全部返回 403 并写入审计日志，如表~\ref{tab:access_audit}所示。
+
+\begin{table}[H]
+\centering
+\caption{越权访问审计日志记录}
+\label{tab:access_audit}
+\small
+\begin{tabularx}{\textwidth}{X c l l}
+\hline
+\textbf{接口路径} & \textbf{状态码} & \textbf{审计 action} & \textbf{拒绝原因} \\
+\hline
+\path{/admin/messages/{OID}} & 403 & TRACE\_DENIED & not\_admin \\
+\path{/admin/audit_logs/{OID}} & 403 & TRACE\_DENIED & not\_admin \\
+\path{/admin/verify/{OID}} & 403 & TRACE\_DENIED & not\_admin \\
+\path{/admin/orders} & 403 & TRACE\_DENIED & not\_admin \\
+\path{/admin/trace} (POST) & 403 & TRACE\_DENIED & not\_admin \\
+\hline
+\end{tabularx}
+\end{table}
+
+\textbf{溯源滥用阻断}：管理员未经审批尝试明文关键词扫描，系统返回 403 阻断。当前溯源流程为审批式——用户/骑手提交溯源申请，管理员审批后按订单号自动完成溯源，管理员不能绕过审批直接扫描明文。
+
+三层访问控制与 PID 后端托管、hash-only 审计共同实现第三章定义的 G5（可追责性）和 G7（隐私最小化）目标。管理员越权操作的审计记录使管理员自身行为也处于可追踪视野中，防止"谁来审计审计者"的信任困境。

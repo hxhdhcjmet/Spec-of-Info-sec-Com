@@ -1,0 +1,80 @@
+\subsection{后端服务实现}
+
+后端服务是 FoodShield 系统的核心控制单元，主要负责用户注册登录、PID 生成、订单创建、Token 验证、消息转发、消息加密存储、Merkle Root 快照生成、完整性验证和条件溯源等功能。后端服务整体上可以划分为业务接口层、安全机制层、数据访问层和审计控制层。
+
+业务接口层主要面向用户端、骑手端和管理员端提供 HTTP API。例如，用户端通过注册接口完成账号创建，通过登录接口完成身份认证，通过创建订单接口生成订单号和订单 Token；骑手端通过订单查询和接单接口获取可参与的订单；管理员端通过登录、查看日志、生成快照、完整性验证和条件溯源接口完成审计操作。
+
+安全机制层负责实现系统的核心密码学功能，包括 PID 匿名身份生成、HMAC-SM3 订单 Token 生成与验证、SM4-CBC 消息加密存储、SM3 消息摘要计算、Merkle Tree 构建和 Root 快照比对。后端在处理业务请求时，会根据不同业务场景调用相应的安全模块。例如，用户创建订单时调用 Token 生成模块，用户加入订单房间时调用 Token 验证模块，用户或骑手发送消息时调用加密和哈希模块，管理员验证日志时调用 Merkle Tree 验证模块。
+
+数据访问层封装了对 SQLite 数据库的读写操作。系统主要通过 \texttt{users} 表保存用户登录信息和 PID 映射关系，通过 \texttt{orders} 表保存订单号、订单状态、用户关联关系和 Token，通过 \texttt{messages} 表保存订单通信消息密文和消息摘要，通过 \texttt{audit\_logs} 表保存 Merkle Root 快照、完整性验证结果和管理员操作记录。
+
+审计控制层主要服务于管理员端。管理员执行登录、查看消息摘要、生成快照、验证日志、处理溯源申请等高权限操作时，系统会将操作类型、目标订单、操作结果和时间写入 \texttt{audit\_logs} 表。该设计使管理员行为本身也处于审计范围内，避免管理员权限成为新的隐私泄露风险。
+
+系统主要后端接口和 WebSocket 事件如表~\ref{tab:backend-api} 所示。
+
+\begin{table}[H]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \renewcommand{\arraystretch}{1.25}
+    \caption{后端主要接口与事件}
+    \label{tab:backend-api}
+
+    \begin{tabularx}{\textwidth}{p{4.1cm}p{4.1cm}Y}
+        \toprule
+        接口或事件 & 功能说明 & 主要安全机制 \\
+        \midrule
+
+        \path|/register| 
+        & 用户注册 
+        & 口令哈希、验证码、PID 生成 \\
+
+        \path|/login| 
+        & 用户登录 
+        & 口令校验、Session \\
+
+        \path|/create_order| 
+        & 创建订单 
+        & 绑定 PID、生成订单 Token \\
+
+        \path|/orders| 
+        & 查询订单历史 
+        & 用户身份校验 \\
+
+        \path|join_order| 
+        & 用户加入订单房间 
+        & \path|order_id| 与 Token 校验 \\
+
+        \path|join_order_as_rider| 
+        & 骑手加入订单房间 
+        & 订单状态校验 \\
+
+        \path|send_message| 
+        & 发送订单消息 
+        & SM4 加密、SM3 摘要、Merkle 更新 \\
+
+        \path|/admin/login| 
+        & 管理员登录 
+        & 管理员身份认证 \\
+
+        \path|/admin/messages/{order_id}| 
+        & 查看消息摘要 
+        & 默认不返回明文 \\
+
+        \path|/admin/snapshot/{order_id}| 
+        & 生成 Merkle 快照 
+        & Root 写入审计日志 \\
+
+        \path|/admin/verify/{order_id}| 
+        & 验证日志完整性 
+        & Merkle Root 比对 \\
+
+        \path|/admin/trace| 
+        & 执行条件溯源 
+        & 权限校验、完整性前置、审计记录 \\
+
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+通过上述接口和事件设计，FoodShield 将普通业务流程与安全机制进行紧密绑定。用户和骑手只能围绕订单号进行通信，管理员只能在认证后访问审计功能，所有敏感操作均由后端统一控制。

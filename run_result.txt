@@ -1,0 +1,77 @@
+[mio@LYJ FoodShield]$ uv run python -m project.tools.attack_demo
+Database initialized successfully.
+FoodShield attack demo
+database: /tmp/foodshield_attack_c9f8251cd7ee46cc8b7610526dbd41ff.db
+
+[unauthenticated_create_order]
+expected: 401 because order creation requires a logged-in user session
+actual:   status=401, success=False, message=请先登录后再操作
+
+[forged_token]
+expected: valid=false because HMAC-SM3 token was modified
+actual:   status=200, success=True, message=order verification completed
+detail:   {'data': {'valid': False}}
+
+[cross_user_verify]
+expected: 403 because another logged-in user cannot verify Alice's order
+actual:   status=403, success=False, message=只能验证当前登录用户自己的订单
+
+[unauthenticated_rider_take_order]
+expected: 401 because rider must register/login before taking orders
+actual:   status=401, success=False, message=请先登录骑手账号后再操作
+
+[first_take_order]
+expected: 200 because the logged-in rider takes an unassigned created order
+actual:   status=200, success=True, message=order taken successfully
+detail:   {'data': {'order_id': 'b76e4076-32de-4347-9c50-d59f5e7b094e', 'status': 'taken'}}
+
+[duplicate_take_order]
+expected: 400 because the order has already been taken
+actual:   status=400, success=False, message=order cannot be taken, current status: taken
+
+[admin_api_without_login]
+expected: 403 because admin session is required
+actual:   status=403, success=False, message=admin permission required
+
+[admin_login_default_demo_account]
+expected: 200 in local demo; startup warns if default credentials are still used
+actual:   status=200, success=True, message=admin login successful
+detail:   {'data': {'admin_username': 'admin', 'is_admin': True}}
+
+[admin_hash_only_messages]
+expected: 200 and no content field because admin sees hash-only audit metadata
+actual:   status=200, success=True, message=admin fetched messages (hash only, no plaintext)
+detail:   {'contains_content_field': False}
+
+[tamper_detection]
+expected: VERIFY_FAIL with hash_mismatch_count > 0 after direct DB content modification
+actual:   status=200, success=False, message=integrity verification failed
+detail:   {'hash_mismatch_count': 1, 'root_match': False}
+
+[plaintext_keyword_trace_blocked]
+expected: 403 because admin plaintext keyword scanning is disabled
+actual:   status=403, success=False, message=管理员端不读取聊天明文，关键词扫描溯源已禁用；请使用 /admin/trace 按订单号和溯源原因触发条件溯源。
+[mio@LYJ FoodShield]$
+[mio@LYJ FoodShield]$ python -m project.tools.performance_benchmark
+Database initialized successfully.
+FoodShield performance benchmark
+database: /tmp/foodshield_perf_13a6c85efcbc49549085caea0fe323cf.db
+users=10, riders=10, orders=50, messages=1000
+token_generate           count=50     avg=   1.199ms p95=   1.488ms max=   1.862ms
+token_verify             count=50     avg=   1.133ms p95=   1.374ms max=   1.683ms
+sm4_roundtrip            count=1000   avg=   0.547ms p95=   0.607ms max=   1.641ms
+message_write            count=1000   avg=   0.454ms p95=   0.582ms max=   1.355ms
+merkle_snapshot          count=50     avg=  19.898ms p95=  21.287ms max=  21.764ms
+integrity_verify         count=50     avg=  37.622ms p95=  39.087ms max=  40.686ms
+[mio@LYJ FoodShield]$ uv run python -m project.tools.performance_benchmark --users 20 --orders-per-user 10 --messages-per-order 30
+Database initialized successfully.
+FoodShield performance benchmark
+database: /tmp/foodshield_perf_744fd185b57646c7858c952861776990.db
+users=20, riders=20, orders=200, messages=6000
+token_generate           count=200    avg=   1.181ms p95=   1.421ms max=   1.888ms
+token_verify             count=200    avg=   1.130ms p95=   1.379ms max=   4.007ms
+sm4_roundtrip            count=6000   avg=   0.550ms p95=   0.624ms max=   3.975ms
+message_write            count=6000   avg=   0.461ms p95=   0.577ms max=   4.242ms
+merkle_snapshot          count=200    avg=  28.167ms p95=  29.822ms max=  32.822ms
+integrity_verify         count=200    avg=  54.483ms p95=  57.017ms max=  61.091ms
+[mio@LYJ FoodShield]$

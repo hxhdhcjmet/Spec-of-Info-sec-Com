@@ -1,44 +1,40 @@
 % !TEX root = ../../../main.tex
-% 消息处理流水线图
+% 消息处理流水线图（竖向布局，解决超宽问题）
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-  node distance = 0.5cm and 1.0cm,
-  pstep/.style = {rectangle, draw, rounded corners=3pt, minimum width=2.8cm, minimum height=0.72cm,
+  node distance = 0.45cm and 1.0cm,
+  pstep/.style = {rectangle, draw, rounded corners=3pt, minimum width=5.8cm, minimum height=0.62cm,
                   font=\small, fill=blue!8, draw=blue!50!black},
-  pside/.style = {rectangle, draw, rounded corners=2pt, minimum width=3.0cm, minimum height=0.62cm,
+  pside/.style = {rectangle, draw, rounded corners=2pt, minimum width=5.8cm, minimum height=0.56cm,
                   font=\small, fill=orange!14, draw=orange!50!black},
-  pout/.style  = {rectangle, draw, rounded corners=8pt, minimum width=2.6cm, minimum height=0.62cm,
+  pout/.style  = {rectangle, draw, rounded corners=8pt, minimum width=5.8cm, minimum height=0.56cm,
                   font=\small, fill=green!14, draw=green!50!black},
   arr/.style   = {-Stealth, thick},
-  lbl/.style   = {font=\small},
+  lbl/.style   = {font=\footnotesize},
 ]
 
-% 主流水线（横向）
-\node[pstep]                        (recv)   {接收明文消息 $M$};
-\node[pstep, right=1.0cm of recv]   (split)  {并行处理};
-\node[pstep, right=1.0cm of split]  (store)  {写入 messages 表};
-\node[pstep, right=1.0cm of store]  (merkle) {更新 Merkle Tree};
-\node[pout,  right=1.0cm of merkle] (bcast)  {广播给房间成员};
-
-% 并行分支（向上/向下）
-\node[pside, above=1.0cm of split] (enc)  {SM4-CBC 加密 $\to$ 密文 $C$};
-\node[pside, below=1.0cm of split] (hash) {SM3 摘要 $\to$ $h = \mathrm{SM3}(\cdots)$};
+% 主流水线（竖向）
+\node[pstep]                        (recv)   {① 接收明文消息 $M$};
+\node[pside, below=0.45cm of recv]  (enc)    {② SM4-CBC 加密 $\to$ 密文 $C$（随机 IV，PKCS7 填充）};
+\node[pside, below=0.45cm of enc]   (hash)   {③ SM3 摘要 $\to$ $h = \mathrm{SM3}(\mathit{orderID}|\mathit{role}|\mathit{ts}|\mathit{ct})$};
+\node[pstep, below=0.45cm of hash]  (store)  {④ 写入 messages 表（密文 $C$ + 摘要 $h$ + 元数据）};
+\node[pstep, below=0.45cm of store] (merkle) {⑤ 更新 Merkle Tree，计算新 Root};
+\node[pout,  below=0.45cm of merkle] (bcast)  {⑥ 广播给房间成员};
 
 % 箭头
-\draw[arr] (recv)   -- (split);
-\draw[arr] (split.north) -- (enc.south);
-\draw[arr] (split.south) -- (hash.north);
-\draw[arr] (enc.east)  -- ++(0.4,0) |- (store.north);
-\draw[arr] (hash.east) -- ++(0.4,0) |- (store.south);
+\draw[arr] (recv)   -- (enc);
+\draw[arr] (enc)    -- (hash);
+\draw[arr] (hash)   -- (store);
 \draw[arr] (store)  -- (merkle);
 \draw[arr] (merkle) -- (bcast);
 
-% 旁注
-\node[lbl, above=0.1cm of enc]  {随机 IV，PKCS7 填充};
-\node[lbl, below=0.1cm of hash] {orderID|role|ts|ciphertext};
+% 并行标注
+\node[lbl, left=0.15cm of enc, font=\footnotesize\itshape, blue!50!black] {加密分支};
+\node[lbl, left=0.15cm of hash, font=\footnotesize\itshape, blue!50!black] {摘要分支};
+\node[lbl, left=0.15cm of store, font=\footnotesize\itshape, blue!50!black] {存储分支};
 
 \end{tikzpicture}
-\caption{消息处理流水线（加密存储与哈希计算并行）}
+\caption{消息处理流水线（加密存储与哈希计算顺序执行）}
 \label{fig:msg_pipeline}
 \end{figure}
