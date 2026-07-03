@@ -24,4 +24,4 @@ m_{\mathrm{order}} = \mathit{orderID} \parallel \mathit{PID} \parallel \mathit{t
 \mathrm{token} = \operatorname{HMAC}(K_{\mathrm{order}},\, m_{\mathrm{order}})
 \end{equation}
 
-其中，$K_{\mathrm{order}}$ 为订单认证密钥，$\mathit{orderID}$ 为订单编号，$\mathit{PID}$ 为用户匿名身份标识，$\mathit{timestamp}$ 为时间戳，$\mathit{nonce}$ 为 128 bit 随机数。通过引入时间戳和随机数，可以降低 Token 被重放利用的风险——即使攻击者截获了某次通信的 Token，由于时间戳的时效性约束和随机数的不可预测性，该 Token 也无法在其他订单或其他时间窗口中被成功复用。通过绑定订单号与匿名身份标识，可以防止攻击者将一个订单的认证凭证迁移到其他订单中使用。
+其中，$K_{\mathrm{order}}$为订单认证密钥，$\mathit{orderID}$为订单编号，$\mathit{PID}$为用户匿名身份标识，$\mathit{timestamp}$为时间戳，$\mathit{nonce}$为 128 bit 随机数。通过引入时间戳和随机数，可以降低 Token 被重放利用的风险——即使攻击者截获了某次通信的 Token，由于时间戳的时效性约束和随机数的不可预测性，该 Token 也无法在其他订单或其他时间窗口中被成功复用。通过绑定订单号与匿名身份标识，可以防止攻击者将一个订单的认证凭证迁移到其他订单中使用。

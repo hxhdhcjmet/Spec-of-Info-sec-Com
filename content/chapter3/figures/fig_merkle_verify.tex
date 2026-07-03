@@ -19,7 +19,7 @@
 \node[proc]     (read)   {读取订单消息列表};
 \node[proc,     below=0.45cm of read]    (decrypt) {SM4-CBC 解密 + 获取密文摘要};
 \node[proc,     below=0.45cm of decrypt] (rehash)  {逐条重算 SM3 摘要};
-\node[proc,     below=0.45cm of rehash]  (rebuild) {重建 Merkle Tree $\to$ Root'};
+\node[proc,     below=0.45cm of rehash]  (rebuild) {重建 Merkle Tree$\to$Root'};
 \node[proc,     below=0.45cm of rebuild] (load)    {加载历史快照 Root};
 \node[decision, below=0.6cm of load]     (d_eq)    {Root'\\== Root？};
 \node[term_ok,  below left=0.6cm and 0.5cm of d_eq]  (ok)      {VERIFY\_OK：日志完整};

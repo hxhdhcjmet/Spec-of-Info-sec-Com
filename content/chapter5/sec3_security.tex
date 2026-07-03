@@ -34,7 +34,7 @@ S11 & 溯源滥用阻断 & T5 追责 & 调用明文关键词溯源 & 403 阻断 
 \label{fig:attack_demo}
 \end{figure}
 
-\textbf{S01--S02：身份与 Token 伪造}。无登录态请求被 \texttt{user\_required} 装饰器拦截返回 401；篡改 Token 末位后，\texttt{verify\_token} 重算 HMAC-SM3 发现不匹配，返回 \texttt{valid=false}，证明在未知 $K_{\mathrm{order}}$ 下 Token 不可伪造。
+\textbf{S01--S02：身份与 Token 伪造}。无登录态请求被 \texttt{user\_required} 装饰器拦截返回 401；篡改 Token 末位后，\texttt{verify\_token} 重算 HMAC-SM3 发现不匹配，返回 \texttt{valid=false}，证明在未知$K_{\mathrm{order}}$下 Token 不可伪造。
 
 \textbf{S03：跨用户越权}。后端从 session 获取当前用户 PID 与订单归属 PID 比对，不一致即返回 403，防止 Token 跨用户复用。
 
@@ -44,4 +44,4 @@ S11 & 溯源滥用阻断 & T5 追责 & 调用明文关键词溯源 & 403 阻断 
 
 \textbf{S09：hash-only 审计}。管理员消息接口返回数据仅含 \texttt{msg\_id}、\texttt{role}、\texttt{message\_hash} 和 \texttt{timestamp}，不含 \texttt{content} 字段，实现审计与隐私访问的接口级权限分离。
 
-\textbf{S10--S11：完整性与溯源}。S10 验证篡改消息密文后完整性验证返回 \texttt{VERIFY\_FAIL}（\texttt{hash\_mismatch\_count=1}，\texttt{root\_match=False}），详见 5.4 节。S11 验证管理员无法绕过审批流程直接扫描明文，\path{/admin/trace_violation} 接口返回 403，溯源必须经完整性校验和审批双重门槛。
+\textbf{S10--S11：完整性与溯源}。S10 验证篡改消息密文后完整性验证返回\texttt{VERIFY\_FAIL}（\texttt{hash\_mismatch\_count=1}，\texttt{root\_match=False}），详见 5.4 节。S11 验证管理员无法绕过审批流程直接扫描明文，溯源接口返回 403，溯源必须经完整性校验和审批双重门槛。

@@ -19,7 +19,7 @@
 \node[proc]     (recv)    {接收 orderID + token};
 \node[decision, below=0.75cm of recv]   (d_time)  {时间戳\\在有效期内？};
 \node[reject,   right=2.6cm of d_time]  (r_time)  {拒绝：已过期};
-\node[proc,     below=0.9cm of d_time]  (recalc)  {重算 token' = HMAC-SM3(K, orderID|PID|ts|nonce)};
+\node[proc,     below=0.9cm of d_time]  (recalc)  {重算$\mathit{token}'{=}\mathrm{HMAC}$-$\mathrm{SM3}$};
 \node[decision, below=0.8cm of recalc]  (d_eq)    {token'\\== token？};
 \node[reject,   right=2.6cm of d_eq]   (r_eq)    {拒绝：签名不匹配};
 \node[decision, below=0.9cm of d_eq]   (d_stat)  {订单状态\\为活跃？};

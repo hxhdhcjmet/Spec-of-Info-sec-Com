@@ -11,16 +11,16 @@
 \subsubsection*{工作流程}
 
 \begin{enumerate}[label=\arabic*., leftmargin=2em]
-  \item \textbf{Root 随消息广播}：每条消息成功入库后，服务器调用 \texttt{create\_merkle\_snapshot} 生成最新 Root，并将其附加在 \texttt{receive\_message} 事件的响应中推送至房间：
+  \item \textbf{Root 随消息广播}：每条消息成功入库后，服务器生成最新 Root，并将其附加在消息事件响应中推送至房间：
     \[
       \mathrm{msg}.\mathit{merkle\_root} \gets \operatorname{MerkleRoot}([h_1, h_2, \ldots, h_n])
     \]
   \item \textbf{客户端本地留存}：用户端和骑手端前端在收到每条消息时，将 \texttt{merkle\_root} 字段保存至 \texttt{localStorage}（以 \texttt{order\_id} 为键），本地仅保存最新值；
-  \item \textbf{主动上报}：通信结束或管理员发起审计前，用户端和骑手端可向 \texttt{POST /report\_merkle\_root} 接口上报本地保存的 Root：
+  \item \textbf{主动上报}：通信结束或管理员发起审计前，用户端和骑手端可向上报接口提交本地保存的 Root：
     \[
       \{\;\mathit{order\_id},\;\mathit{merkle\_root},\;\mathit{role}\;\} \;\to\; \text{\texttt{audit\_logs}}.\mathit{action} = \text{\texttt{CLIENT\_ROOT\_REPORTED}}
     \]
-  \item \textbf{三方比对}：管理员执行 \texttt{POST /admin/verify/\{order\_id\}} 时，服务器在完成本地 Merkle 验证后，额外从 \texttt{audit\_logs} 中读取用户端和骑手端最近一次上报的 Root，进行三角比对：
+  \item \textbf{三方比对}：管理员执行验证时，服务器在完成本地 Merkle 验证后，额外从审计日志中读取用户端和骑手端最近一次上报的 Root，进行三角比对：
     \[
       R_{\mathrm{server}} \stackrel{?}{=} R_{\mathrm{user}} \stackrel{?}{=} R_{\mathrm{rider}}
     \]

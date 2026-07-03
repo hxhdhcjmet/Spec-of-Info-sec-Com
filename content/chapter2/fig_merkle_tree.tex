@@ -27,7 +27,7 @@
 \node[midnd] (P34) at (10.5,1.8) {$H(\mathit{leaf}_3 \| \mathit{leaf}_4)$};
 
 % 根节点
-\node[rootnd] (ROOT) at (6.3, 3.6) {Merkle Root $= H(P_{12} \| P_{34})$};
+\node[rootnd] (ROOT) at (6.3, 3.6) {Merkle Root$= H(P_{12} \| P_{34})$};
 
 % 连线
 \draw[arr] (L1.north)   -- (P12.south);
@@ -38,10 +38,10 @@
 \draw[arr] (P34.north)  -- (ROOT.south);
 
 % 数据标注
-\node[lbl, below=0.3cm of L1] {消息 $m_1$};
-\node[lbl, below=0.3cm of L2] {消息 $m_2$};
-\node[lbl, below=0.3cm of L3] {消息 $m_3$};
-\node[lbl, below=0.3cm of L4] {消息 $m_4$};
+\node[lbl, below=0.3cm of L1] {消息$m_1$};
+\node[lbl, below=0.3cm of L2] {消息$m_2$};
+\node[lbl, below=0.3cm of L3] {消息$m_3$};
+\node[lbl, below=0.3cm of L4] {消息$m_4$};
 
 % 高亮 leaf2 变化传播路径（虚线框）
 \draw[dashed, red!60!black, thick, rounded corners=3pt]
@@ -51,7 +51,7 @@
 \draw[dashed, red!60!black, thick, rounded corners=3pt]
   ([xshift=-3pt, yshift=-3pt] ROOT.south west) rectangle ([xshift=3pt, yshift=3pt] ROOT.north east);
 
-\node[lbl, right=0.15cm of L2, red!60!black] {← 若 $m_2$ 改变};
+\node[lbl, right=0.15cm of L2, red!60!black] {← 若$m_2$改变};
 \node[lbl, right=0.15cm of P12, red!60!black] {← 父节点改变};
 \node[lbl, right=0.15cm of ROOT, red!60!black] {← Root 改变};
 
