@@ -1,6 +1,6 @@
 \subsection{WebSocket 实时通信机制}
 
-WebSocket 是一种基于 TCP 的全双工通信协议，由 Fette 和 Melnikov 于 2011 年标准化为 RFC 6455\footnote{Fette, I., Melnikov, A. "The WebSocket Protocol." RFC 6455, IETF, 2011.}。与传统的 HTTP 通信采用"客户端请求、服务器响应"的模式不同，WebSocket 在客户端与服务器建立连接后，可以在同一连接上进行双向、全双工的实时数据交互，因此常用于在线聊天、实时通知、协同编辑和数据监控等场景。
+WebSocket 是一种基于 TCP 的全双工通信协议，由 Fette 和 Melnikov 于 2011 年标准化为 RFC 6455\footnote{Fette, I., Melnikov, A. “The WebSocket Protocol.” RFC 6455, IETF, 2011.}。与传统的 HTTP 通信采用“客户端请求、服务器响应”的模式不同，WebSocket 在客户端与服务器建立连接后，可以在同一连接上进行双向、全双工的实时数据交互，因此常用于在线聊天、实时通知、协同编辑和数据监控等场景。
 
 WebSocket 通信的一般过程包括连接建立、身份认证、消息发送、消息转发和连接关闭五个阶段。在连接建立阶段，客户端首先向服务器发送 HTTP 升级请求（Upgrade: websocket），服务器返回 101 Switching Protocols 响应后双方建立 WebSocket 长连接。此后，客户端和服务器可以在该连接上持续交换数据帧（Data Frame），而不需要为每条消息重新建立 HTTP 请求。这一机制显著降低了通信延迟和带宽开销，适合需要频繁消息交互的实时场景。
 
@@ -8,17 +8,7 @@ WebSocket 通信的一般过程包括连接建立、身份认证、消息发送�
 
 订单通信过程可以抽象为：
 
-\begin{equation}
-\mathit{Client} \xrightarrow{\mathit{orderID},\, \mathit{credential}} \mathit{Server}
-\end{equation}
-
-\begin{equation}
-\mathit{Server} \xrightarrow{\operatorname{verify}(\mathit{orderID},\, \mathit{credential})} \mathit{Room}(\mathit{orderID})
-\end{equation}
-
-\begin{equation}
-\mathit{Message} \xrightarrow{\operatorname{forward}} \mathit{User}/\mathit{Rider}
-\end{equation}
+\input{content/chapter2/fig_three}
 
 其中，$\mathit{credential}$表示订单认证凭证（即 Token）或骑手身份凭证。服务器在转发消息的同时，对消息进行加密存储、哈希计算和日志记录，使通信功能与安全审计机制形成联动。
 

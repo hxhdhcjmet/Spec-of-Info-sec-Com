@@ -1,0 +1,25 @@
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Latex, font=\small]
+
+% 顶部参与方
+\node[font=\bfseries] (client) at (0,0) {客户端};
+\node[font=\bfseries] (server) at (4,0) {服务器};
+\node[font=\bfseries] (room)   at (8,0) {订单房间};
+
+% 生命线
+\draw[densely dashed] (0,-0.4) -- (0,-3.4);
+\draw[densely dashed] (4,-0.4) -- (4,-3.4);
+\draw[densely dashed] (8,-0.4) -- (8,-3.4);
+
+% 交互过程
+\draw[->] (0,-1.0) -- node[above] {发送 \textit{orderID, credential}} (4,-1.0);
+\draw[->] (4,-1.9) -- node[above] {验证凭证并加入房间} (8,-1.9);
+\draw[->] (4,-2.8) -- node[above] {转发消息} (8,-2.8);
+
+% 房间内广播说明
+\node[align=center] at (8,-3.7) {\small 广播至\\用户 / 骑手};
+
+\end{tikzpicture}
+\caption{订单认证与消息转发时序图}
+\end{figure}

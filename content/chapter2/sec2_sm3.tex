@@ -3,19 +3,17 @@
 SM3 是我国商用密码标准中的密码杂凑算法，于 2016 年作为国家标准 GB/T 32905-2016 发布\footnote{GB/T 32905-2016《信息安全技术\ SM3密码杂凑算法》，国家标准化管理委员会，2016年8月29日发布，2017年3月1日实施。}。SM3 的输出长度固定为 256 bit，分组长度为 512 bit，采用 Merkle--Damg\r{a}rd 迭代结构，共执行 64 轮压缩运算。SM3 主要用于数据完整性校验、数字签名、消息认证码构造和随机数生成等场景，已成为我国金融、政务、电力等关键信息基础设施中广泛部署的国密算法之一。
 
 设$m$表示输入消息，SM3 的输出可以表示为：
-
 \begin{equation}
 h = \operatorname{SM3}(m)
 \end{equation}
-
 其中，$h$为长度为 256 bit 的消息摘要。SM3 的压缩函数将 256 bit 的中间状态值和 512 bit 的消息分组作为输入，通过 64 轮混合运算（包括消息扩展、布尔函数、模加运算和循环移位等操作）输出新的 256 bit 状态值。由于摘要长度固定，SM3 适合用于对任意长度数据生成紧凑的完整性标识。
 
 密码杂凑函数的安全性通常以以下三个性质来刻画：
 
 \begin{itemize}[leftmargin=2em]
-\item \textbf{抗原像性（Preimage Resistance）}：给定哈希值$h$，难以找到任意消息$m$使得$\operatorname{SM3}(m) = h$。对于 256 bit 输出的杂凑函数，暴力搜索的复杂度为$O(2^{256})$。
-\item \textbf{抗第二原像性（Second Preimage Resistance）}：给定消息$m_1$，难以找到另一个不同的消息$m_2 \neq m_1$使得$\operatorname{SM3}(m_1) = \operatorname{SM3}(m_2)$。暴力搜索的复杂度为$O(2^{256})$。
-\item \textbf{抗碰撞性（Collision Resistance）}：难以找到任意两个不同的消息$m_1 \neq m_2$使得$\operatorname{SM3}(m_1) = \operatorname{SM3}(m_2)$。根据生日攻击，寻找碰撞的复杂度为$O(2^{128})$。
+\item \textbf{抗原像性（Preimage Resistance）}：给定哈希值$h$，难以找到任意消息$m$使得$\operatorname{SM3}(m) = h$。
+\item \textbf{抗第二原像性（Second Preimage Resistance）}：给定消息$m_1$，难以找到另一个不同的消息$m_2 \neq m_1$使得$\operatorname{SM3}(m_1) = \operatorname{SM3}(m_2)$。
+\item \textbf{抗碰撞性（Collision Resistance）}：难以找到任意两个不同的消息$m_1 \neq m_2$使得$\operatorname{SM3}(m_1) = \operatorname{SM3}(m_2)$。
 \end{itemize}
 
 上述三个性质为 FoodShield 系统的安全机制提供了理论基础：抗原像性保证攻击者无法从消息摘要逆推原始消息内容；抗第二原像性保证攻击者无法为已有消息构造具有相同摘要的替代消息；抗碰撞性则是 Merkle Tree 完整性验证的安全基础——只要攻击者无法找到 SM3 碰撞，就无法在不改变 Merkle Root 的前提下篡改任意叶子节点。
@@ -23,9 +21,7 @@ h = \operatorname{SM3}(m)
 在 FoodShield 系统中，SM3 主要用于三个方面。第一，SM3 可作为 HMAC 的底层杂凑函数，用于构造 HMAC-SM3 订单认证 Token。第二，系统可以对通信消息、密文内容、订单编号、发送方角色、时间戳等字段计算消息摘要，作为日志完整性验证的基础。第三，系统可以对 PID、设备标识等敏感字段进行摘要化处理，使管理员端在默认情况下只看到摘要值，而不直接接触敏感原始信息。
 
 例如，对一条订单通信消息，可以将其摘要定义为：
-
 \begin{equation}
 \mathit{message}_{\mathit{hash}} = \operatorname{SM3}(\mathit{orderID} \parallel \mathit{senderRole} \parallel \mathit{timestamp} \parallel \mathit{ciphertext})
 \end{equation}
-
 其中，$\mathit{senderRole}$表示发送方角色，$\mathit{ciphertext}$表示加密后的消息内容。只要消息内容、订单号、发送方角色或时间戳发生变化，重新计算得到的摘要值就会发生显著变化（雪崩效应）。因此，消息摘要可以作为后续 Merkle Tree 日志完整性验证的基本单元。

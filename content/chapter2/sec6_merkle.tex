@@ -1,6 +1,6 @@
 \subsection{Merkle Tree 完整性验证}
 
-Merkle Tree 是一种基于哈希函数构造的树形数据完整性验证结构，又称哈希树，由 Ralph Merkle 于 1979 年提出\footnote{Merkle, R. C. "A Certified Digital Signature." In \textit{Advances in Cryptology -- CRYPTO '89 Proceedings}, Lecture Notes in Computer Science, vol. 435, pp. 218--238, Springer, 1989. 原始构思参见 Merkle, R. C. "Secrecy, Authentication, and Public Key Systems." Technical Report, Stanford University, 1979.}。其基本思想是：先对每个数据块计算哈希值，作为叶子节点；再将相邻节点哈希拼接后继续计算父节点哈希；最终逐层向上计算得到根节点哈希，即 Merkle Root。只要任意一个叶子节点对应的数据发生变化，最终计算得到的 Merkle Root 就会发生变化。因此，Merkle Tree 广泛应用于区块链、文件完整性验证、日志审计和分布式存储等场景。
+Merkle Tree 是一种基于哈希函数构造的树形数据完整性验证结构，又称哈希树，由 Ralph Merkle 于 1979 年提出\footnote{Merkle, R. C. “A Certified Digital Signature.” In \textit{Advances in Cryptology -- CRYPTO '89 Proceedings}, Lecture Notes in Computer Science, vol. 435, pp. 218--238, Springer, 1989. 原始构思参见 Merkle, R. C. “Secrecy, Authentication, and Public Key Systems.” Technical Report, Stanford University, 1979.}。其基本思想是：先对每个数据块计算哈希值，作为叶子节点；再将相邻节点哈希拼接后继续计算父节点哈希；最终逐层向上计算得到根节点哈希，即 Merkle Root。只要任意一个叶子节点对应的数据发生变化，最终计算得到的 Merkle Root 就会发生变化。因此，Merkle Tree 广泛应用于区块链、文件完整性验证、日志审计和分布式存储等场景。
 
 设系统中共有$n$条消息日志，分别为$m_1, m_2, \cdots, m_n$，对应叶子节点可以表示为：
 
@@ -22,7 +22,7 @@ Merkle Tree 是一种基于哈希函数构造的树形数据完整性验证结�
 
 \input{content/chapter2/fig_merkle_tree}
 
-Merkle Tree 的一个重要优势是支持高效的\textbf{包含证明}（Inclusion Proof）：要验证某个叶子节点$\mathit{leaf}_i$是否包含在以$\mathit{root}$为根的 Merkle Tree 中，验证者只需知道从$\mathit{leaf}_i$到$\mathit{root}$路径上的兄弟节点哈希值（即验证路径），即可通过$O(\log n)$次哈希计算完成验证，而无需获取全部$n$个叶子节点。这一性质使得 Merkle Tree 在大规模数据集的完整性验证中具有显著的效率优势。
+Merkle Tree 的一个重要优势是支持高效的\textbf{成员关系证明}（Inclusion Proof）：要验证某个叶子节点$\mathit{leaf}_i$是否包含在以$\mathit{root}$为根的 Merkle Tree 中，验证者只需知道从$\mathit{leaf}_i$到$\mathit{root}$路径上的兄弟节点哈希值（即验证路径），即可通过$O(\log n)$次哈希计算完成验证，而无需获取全部$n$个叶子节点。这一性质使得 Merkle Tree 在大规模数据集的完整性验证中具有显著的效率优势。
 
 在 FoodShield 系统中，Merkle Tree 用于订单通信日志的完整性验证。系统并不直接将明文消息作为叶子节点，而是将与消息相关的摘要信息作为叶子节点输入。为了绑定订单上下文、发送方角色、消息顺序和密文内容，本系统中单条消息日志的叶子节点可以抽象定义为：
 

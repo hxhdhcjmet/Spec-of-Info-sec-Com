@@ -12,13 +12,13 @@ FoodShield 采用基于 Flask-SocketIO 的 WebSocket 通道实现用户端与骑
 
 \textbf{用户端入房}（\texttt{join\_order} 事件）需提交以下字段：
 \[
-  \{\;\mathit{order\_id},\;\mathrm{PID},\;\mathit{timestamp},\;\mathit{token},\;\mathit{role}\;\}
+  \{\;\texttt{order\_id},\;\mathrm{PID},\;\texttt{timestamp},\;\texttt{token},\;\texttt{role}\;\}
 \]
 服务器按 3.9 节描述的 Token 验证流程完成三重校验（有效期、Token 合法性、订单存在性），验证通过后执行 \texttt{join\_room(order\_id)}，将该 WebSocket 连接加入对应房间，同时广播系统消息通知房间内成员。
 
 \textbf{骑手端入房}（\texttt{join\_order\_as\_rider} 事件）需提交：
 \[
-  \{\;\mathit{order\_id},\;\mathit{role}\;\}
+  \{\;\texttt{order\_id},\;\texttt{role}\;\}
 \]
 骑手端不需要提交 Token，但服务器会检查订单状态，仅当订单处于 \texttt{taken}、\texttt{delivering} 或 \texttt{completed} 状态时，才允许骑手加入对应房间。这一状态约束保证只有已接单的骑手才能进入订单通信通道，避免任意骑手随意侦听订单房间。
 
@@ -26,7 +26,7 @@ FoodShield 采用基于 Flask-SocketIO 的 WebSocket 通道实现用户端与骑
 
 用户端或骑手端通过 \texttt{send\_message} 事件发送消息时，消息负载包含：
 \[
-  \{\;\mathit{order\_id},\;\mathit{sender\_pid},\;\mathit{role},\;\mathit{content}\;\}
+  \{\;\texttt{order\_id},\;\texttt{sender\_pid},\;\texttt{role},\;\texttt{content}\;\}
 \]
 服务器在内存中完成以下操作后，再将消息广播至房间：
 

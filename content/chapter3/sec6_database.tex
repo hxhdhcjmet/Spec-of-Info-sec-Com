@@ -1,7 +1,7 @@
 % !TEX root = ../../main.tex
 \subsection{数据库设计}
 
-FoodShield 使用 SQLite 作为数据存储后端，数据库共设计四张核心表：\texttt{users}（用户表）、\texttt{orders}（订单表）、\texttt{messages}（消息表）和 \texttt{audit\_logs}（审计日志表）。各表字段的设计均遵循"最小必要原则"，避免将超出业务所需的敏感信息明文保存在数据库中。
+FoodShield 使用 SQLite 作为数据存储后端，数据库共设计四张核心表：\texttt{users}（用户表）、\texttt{orders}（订单表）、\texttt{messages}（消息表）和 \texttt{audit\_logs}（审计日志表）。各表字段的设计均遵循“最小必要原则”，避免将超出业务所需的敏感信息明文保存在数据库中。
 
 \subsubsection*{用户表（users）}
 
@@ -111,6 +111,8 @@ id              & INTEGER       & 自增主键               & 内部索引 \\
 
 \subsubsection*{表关系与隐私设计原则}
 
-四张表之间通过外键关联，整体以订单号为核心索引构建数据流。\texttt{users} 与 \texttt{orders} 通过 \texttt{user\_id} 关联，\texttt{orders} 与 \texttt{messages} 通过 \texttt{order\_id} 关联，\texttt{audit\_logs} 通过 \texttt{order\_id} 与订单和消息建立审计关系。
+如表~\ref{tab:db_users}、表~\ref{tab:db_orders}、表~\ref{tab:db_messages}和表~\ref{tab:db_audit}所示，
+系统数据库由 \texttt{users} 用户表、\texttt{orders} 订单表、\texttt{messages} 消息表和
+\texttt{audit\_logs} 审计日志表组成。四张表之间通过外键关联，整体以订单号为核心索引构建数据流。\texttt{users} 与 \texttt{orders} 通过 \texttt{user\_id} 关联，\texttt{orders} 与 \texttt{messages} 通过 \texttt{order\_id} 关联，\texttt{audit\_logs} 通过 \texttt{order\_id} 与订单和消息建立审计关系。
 
 在隐私保护方面，数据库设计遵循以下原则：其一，消息明文不落库，\texttt{content}字段存储 SM4-CBC 密文，明文只在服务端内存中短暂存在；其二，\texttt{pid\_r}（随机数$r$）与\texttt{pid}均仅服务端维护，前端不可见，骑手端不可见；其三，\texttt{note}备注字段在 API 响应中对骑手端和管理员端屏蔽，仅在用户本人查询订单时返回；其四，\texttt{sender\_pid}字段中存储的是 PID 而非用户名，管理员默认视图也不直接暴露 PID 对应的真实用户名。

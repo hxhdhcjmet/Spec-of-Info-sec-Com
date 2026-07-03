@@ -8,7 +8,7 @@ PID（Pseudonymous Identifier）即伪身份标识或匿名身份标识，是隐
 \mathrm{PID}=\operatorname{HMAC}(K_{\mathrm{master}},\, \mathit{userID} \parallel r)
 \end{equation}
 
-其中，$K_{\mathrm{master}}$为平台主密钥，$\mathit{userID}$为用户真实身份标识，$r$为随机数。引入随机数$r$的作用在于实现\textbf{跨订单不可链接性}（Cross-Order Unlinkability）：即使同一用户在不同订单中使用 PID，由于每次生成的随机数不同，攻击者无法通过比较 PID 值来判断两个订单是否属于同一用户。这一性质对于防止跨订单的用户画像构建和身份关联攻击具有重要意义。
+其中，$K_{\mathrm{master}}$为平台主密钥，$\mathit{userID}$为用户真实身份标识，$r$为随机数。引入随机数$r$的作用在于防止敌手实现\textbf{并发攻击}（Cross-Order Unlinkability）：即使同一用户在不同订单中使用 PID，由于每次生成的随机数不同，攻击者无法通过比较 PID 值来判断两个订单是否属于同一用户。这一性质对于防止跨订单的用户画像构建和身份关联攻击具有重要意义。
 
 PID 的安全性可以从以下两个角度分析：
 
