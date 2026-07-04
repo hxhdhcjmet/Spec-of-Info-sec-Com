@@ -10,8 +10,8 @@
                     font=\small, fill=green!12, draw=green!50!black},
   midnd/.style   = {rectangle, draw, rounded corners=2pt, minimum width=3.0cm, minimum height=0.62cm,
                     font=\small, fill=blue!10, draw=blue!50!black},
-  rootnd/.style  = {rectangle, draw, rounded corners=2pt, minimum width=3.2cm, minimum height=0.68cm,
-                    font=\small\bfseries, fill=red!10, draw=red!50!black},
+  rootnd/.style  = {rectangle, draw, rounded corners=2pt, minimum width=3.4cm, minimum height=0.92cm,
+                    font=\small\bfseries, align=center, fill=red!10, draw=red!50!black},
   lbl/.style     = {font=\small\itshape},
   arr/.style     = {-Stealth, thick},
 ]
@@ -27,7 +27,7 @@
 \node[midnd] (P34) at (10.5,1.8) {$H(\mathit{leaf}_3 \| \mathit{leaf}_4)$};
 
 % 根节点
-\node[rootnd] (ROOT) at (6.3, 3.6) {Merkle Root$= H(P_{12} \| P_{34})$};
+\node[rootnd] (ROOT) at (6.3, 3.6) {Merkle Root\\$= H(P_{12} \| P_{34})$};
 
 % 连线
 \draw[arr] (L1.north)   -- (P12.south);
@@ -51,9 +51,9 @@
 \draw[dashed, red!60!black, thick, rounded corners=3pt]
   ([xshift=-3pt, yshift=-3pt] ROOT.south west) rectangle ([xshift=3pt, yshift=3pt] ROOT.north east);
 
-\node[lbl, right=0.15cm of L2, red!60!black] {← 若$m_2$改变};
-\node[lbl, right=0.15cm of P12, red!60!black] {← 父节点改变};
-\node[lbl, right=0.15cm of ROOT, red!60!black] {← Root 改变};
+\node[lbl, below=0.75cm of L2, red!60!black] {若$m_2$改变};
+\node[lbl, above=0.20cm of P12, red!60!black] {父节点改变};
+\node[lbl, above=0.20cm of ROOT, red!60!black] {Root 改变};
 
 \end{tikzpicture}
 \caption{Merkle Tree 结构示意图（任意叶子变化均导致 Root 改变）}

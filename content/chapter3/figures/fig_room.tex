@@ -2,6 +2,7 @@
 % 订单房间隔离示意图
 \begin{figure}[H]
 \centering
+\resizebox{0.96\textwidth}{!}{%
 \begin{tikzpicture}[
   clientnd/.style = {rectangle, draw, rounded corners=3pt, minimum width=2.0cm, minimum height=0.58cm,
                      font=\small, fill=green!14, draw=green!50!black},
@@ -9,43 +10,44 @@
                      font=\small, fill=orange!18, draw=orange!60!black},
   srvnd/.style    = {rectangle, draw, rounded corners=4pt, minimum width=1.8cm, minimum height=1.1cm,
                      font=\small\bfseries, align=center, fill=gray!12, draw=gray!50},
-  arr/.style      = {-Stealth, thick},
+  arr/.style      = {-Stealth, thick, shorten <=2pt, shorten >=2pt},
   lbl/.style      = {font=\footnotesize},
 ]
 
 % Room A 背景
-\fill[blue!5, rounded corners=5pt] (0, -2.2) rectangle (4.8, 1.1);
-\draw[blue!50!black, rounded corners=5pt] (0, -2.2) rectangle (4.8, 1.1);
-\node[font=\small\bfseries, blue!60!black] at (2.4, 0.75) {Room A（订单 \#1001）};
-\node[clientnd] (UA) at (1.2, 0.05)  {用户 A};
-\node[ridernd]  (RA) at (3.6, 0.05)  {骑手 X};
-\node[lbl]    at (2.4,-0.65) {双向通信，相互可见};
-\node[lbl]    at (2.4,-1.2) {用户 PID 对骑手不可见};
+\fill[blue!5, rounded corners=5pt] (0, -2.2) rectangle (4.9, 1.1);
+\draw[blue!50!black, rounded corners=5pt] (0, -2.2) rectangle (4.9, 1.1);
+\node[font=\small\bfseries, blue!60!black] at (2.45, 0.75) {Room A（订单 \#1001）};
+\node[clientnd] (UA) at (1.25, 0.05)  {用户 A};
+\node[ridernd]  (RA) at (3.65, 0.05)  {骑手 X};
+\node[lbl]    at (2.45,-0.65) {双向通信，相互可见};
+\node[lbl]    at (2.45,-1.2) {用户 PID 对骑手不可见};
 
 % 服务器（中间，不与任何 Room 重叠）
-\node[srvnd] (server) at (5.9, 0) {平台\\服务器};
+\node[srvnd] (server) at (6.25, 0) {平台\\服务器};
 
 % Room B 背景
-\fill[green!4, rounded corners=5pt] (7.0, -2.2) rectangle (11.8, 1.1);
-\draw[green!50!black, rounded corners=5pt] (7.0, -2.2) rectangle (11.8, 1.1);
-\node[font=\small\bfseries, green!60!black] at (9.4, 0.75) {Room B（订单 \#1002）};
-\node[clientnd] (UB) at (8.2,  0.05) {用户 B};
-\node[ridernd]  (RB) at (10.6, 0.05) {骑手 Y};
-\node[lbl]    at (9.4,-0.65) {双向通信，相互可见};
-\node[lbl]    at (9.4,-1.2) {用户 PID 对骑手不可见};
+\fill[green!4, rounded corners=5pt] (7.6, -2.2) rectangle (12.5, 1.1);
+\draw[green!50!black, rounded corners=5pt] (7.6, -2.2) rectangle (12.5, 1.1);
+\node[font=\small\bfseries, green!60!black] at (10.05, 0.75) {Room B（订单 \#1002）};
+\node[clientnd] (UB) at (8.85,  0.05) {用户 B};
+\node[ridernd]  (RB) at (11.25, 0.05) {骑手 Y};
+\node[lbl]    at (10.05,-0.65) {双向通信，相互可见};
+\node[lbl]    at (10.05,-1.2) {用户 PID 对骑手不可见};
 
-% 服务器连线（从各端到服务器）
-\draw[arr] (UA.east)  -- (server.west);
-\draw[arr] (RA.east)  -- (server.west);
-\draw[arr] (server.east) -- (UB.west);
-\draw[arr] (server.east) -- (RB.west);
+% 服务器连线（从房间边界连接，避免线条穿过成员节点）
+\draw[arr] (4.9, 0.32) -- ([yshift=0.32cm]server.west);
+\draw[arr] (4.9,-0.32) -- ([yshift=-0.32cm]server.west);
+\draw[arr] ([yshift=0.32cm]server.east) -- (7.6, 0.32);
+\draw[arr] ([yshift=-0.32cm]server.east) -- (7.6,-0.32);
 
 % 隔离标注（避开服务器节点，分两段绘制）
-\draw[red!60!black, thick, dashed] (5.9,-2.0) -- (5.9,-0.75);
-\draw[red!60!black, thick, dashed] (5.9, 0.75) -- (5.9, 1.0);
-\node[font=\footnotesize\itshape, red!60!black] at (5.9,-1.7) {房间隔离};
+\draw[red!60!black, thick, dashed] (6.25,-2.0) -- (6.25,-0.78);
+\draw[red!60!black, thick, dashed] (6.25, 0.78) -- (6.25, 1.0);
+\node[font=\footnotesize\itshape, red!60!black] at (6.25,-1.7) {房间隔离};
 
-\end{tikzpicture}
+\end{tikzpicture}%
+}
 \caption{订单房间隔离示意图（不同订单房间成员相互不可见）}
 \label{fig:room_isolation}
 \end{figure}
