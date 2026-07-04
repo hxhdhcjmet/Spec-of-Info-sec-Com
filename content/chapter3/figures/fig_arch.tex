@@ -1,20 +1,21 @@
 \begin{figure}[H]
 \centering
+\resizebox{0.96\textwidth}{!}{%
 \begin{tikzpicture}[
   layerbox/.style = {rectangle, draw, rounded corners=4pt, minimum width=12.0cm, minimum height=1.0cm,
                      font=\small, text centered},
-  comp/.style     = {rectangle, draw, rounded corners=2pt, minimum width=2.3cm, minimum height=0.6cm,
-                     font=\small, fill=white},
+  comp/.style     = {rectangle, draw, rounded corners=2pt, minimum width=2.05cm, minimum height=0.58cm,
+                     font=\footnotesize, inner xsep=2pt, fill=white},
   lbl/.style      = {font=\small\bfseries},
   arr/.style      = {-Stealth, thick},
 ]
 
 % 五层背景色（右侧加宽）
-\fill[blue!8,   rounded corners=4pt] (-6.2,-0.15) rectangle (7.2, 1.0);
-\fill[green!10, rounded corners=4pt] (-6.2,-1.35) rectangle (7.2,-0.25);
-\fill[orange!12,rounded corners=4pt] (-6.2,-2.55) rectangle (7.2,-1.45);
-\fill[purple!8, rounded corners=4pt] (-6.2,-3.75) rectangle (7.2,-2.65);
-\fill[red!8,    rounded corners=4pt] (-6.2,-4.95) rectangle (7.2,-3.85);
+\fill[blue!8,   rounded corners=4pt] (-6.2,-0.15) rectangle (8.3, 1.0);
+\fill[green!10, rounded corners=4pt] (-6.2,-1.35) rectangle (8.3,-0.25);
+\fill[orange!12,rounded corners=4pt] (-6.2,-2.55) rectangle (8.3,-1.45);
+\fill[purple!8, rounded corners=4pt] (-6.2,-3.75) rectangle (8.3,-2.65);
+\fill[red!8,    rounded corners=4pt] (-6.2,-4.95) rectangle (8.3,-3.85);
 
 % 层标题（左侧）
 \node[lbl, anchor=east] at (-6.1, 0.42) {表现层};
@@ -25,23 +26,23 @@
 
 % 表现层组件
 \node[comp, fill=blue!15] at (-3.8, 0.42) {用户端};
-\node[comp, fill=blue!15] at (-1.0, 0.42) {骑手端};
-\node[comp, fill=blue!15] at ( 1.8, 0.42) {管理员端};
+\node[comp, fill=blue!15] at (-1.1, 0.42) {骑手端};
+\node[comp, fill=blue!15] at ( 1.6, 0.42) {管理员端};
 \node[comp, fill=blue!8, draw=blue!30] at ( 4.8, 0.42) {WebSocket 通道};
 
 % 业务服务层组件
-\node[comp, fill=green!18] at (-4.4,-0.80) {注册/登录};
-\node[comp, fill=green!18] at (-1.8,-0.80) {订单管理};
-\node[comp, fill=green!18] at ( 0.8,-0.80) {消息转发};
-\node[comp, fill=green!18] at ( 3.4,-0.80) {投诉申请};
-\node[comp, fill=green!10, draw=green!40] at ( 5.6,-0.80) {Token 验证};
+\node[comp, fill=green!18] at (-4.5,-0.80) {注册/登录};
+\node[comp, fill=green!18] at (-2.0,-0.80) {订单管理};
+\node[comp, fill=green!18] at ( 0.55,-0.80) {消息转发};
+\node[comp, fill=green!18] at ( 3.15,-0.80) {投诉申请};
+\node[comp, fill=green!10, draw=green!40] at ( 5.85,-0.80) {Token 验证};
 
 % 安全机制层组件
-\node[comp, fill=orange!20] at (-4.4,-2.05) {PID 生成};
-\node[comp, fill=orange!20] at (-1.8,-2.05) {SM4-CBC 加密};
-\node[comp, fill=orange!20] at ( 0.8,-2.05) {SM3 摘要};
-\node[comp, fill=orange!20] at ( 3.4,-2.05) {Merkle Tree};
-\node[comp, fill=orange!12, draw=orange!50] at ( 5.6,-2.05) {条件溯源};
+\node[comp, fill=orange!20] at (-4.5,-2.05) {PID 生成};
+\node[comp, fill=orange!20] at (-2.0,-2.05) {SM4-CBC 加密};
+\node[comp, fill=orange!20] at ( 0.55,-2.05) {SM3 摘要};
+\node[comp, fill=orange!20] at ( 3.15,-2.05) {Merkle Tree};
+\node[comp, fill=orange!12, draw=orange!50] at ( 5.85,-2.05) {条件溯源};
 
 % 数据存储层组件
 \node[comp, fill=purple!12] at (-3.8,-3.20) {users 表};
@@ -55,13 +56,14 @@
 \node[comp, fill=red!14] at ( 1.8,-4.40) {溯源操作日志};
 \node[comp, fill=red!14] at ( 4.8,-4.40) {三端摘要增强};
 
-% 层间箭头（整体右移，避免压住模块）
-\draw[arr, gray] (7.0, 0.42) -- (7.0,-0.80) node[midway, right, font=\footnotesize]{调用};
-\draw[arr, gray] (7.0,-0.80) -- (7.0,-2.05) node[midway, right, font=\footnotesize]{调用};
-\draw[arr, gray] (7.0,-2.05) -- (7.0,-3.20) node[midway, right, font=\footnotesize]{读写};
-\draw[arr, gray] (7.0,-3.20) -- (7.0,-4.40) node[midway, right, font=\footnotesize]{审计};
+% 层间箭头（放在模块外侧留白处）
+\draw[arr, gray] (7.65, 0.42) -- (7.65,-0.80) node[midway, right, font=\scriptsize, xshift=1pt]{调用};
+\draw[arr, gray] (7.65,-0.80) -- (7.65,-2.05) node[midway, right, font=\scriptsize, xshift=1pt]{调用};
+\draw[arr, gray] (7.65,-2.05) -- (7.65,-3.20) node[midway, right, font=\scriptsize, xshift=1pt]{读写};
+\draw[arr, gray] (7.65,-3.20) -- (7.65,-4.40) node[midway, right, font=\scriptsize, xshift=1pt]{审计};
 
-\end{tikzpicture}
+\end{tikzpicture}%
+}
 \caption{FoodShield 系统总体架构分层图}
 \label{fig:arch_layers}
 \end{figure}
