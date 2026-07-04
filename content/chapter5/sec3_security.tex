@@ -12,17 +12,17 @@
 \hline
 \textbf{编号} & \textbf{攻击类型} & \textbf{威胁} & \textbf{攻击手段} & \textbf{预期防御} & \textbf{实际} & \textbf{结论} \\
 \hline
-S01 & 未登录创建订单 & T1 伪造 & 无登录态调用创建订单 & 401 拒绝 & 401 & ✓ \\
-S02 & 伪造 Token & T2 伪造 & 修改 Token 末位字符 & valid=false & valid=false & ✓ \\
-S03 & 跨用户越权 & T1 越权 & mallory 验证 alice 订单 & 403 拒绝 & 403 & ✓ \\
-S04 & 未登录接单 & T1 伪造 & 无登录态调用接单 & 401 拒绝 & 401 & ✓ \\
-S05 & 正常接单（基线） & — & 骑手首次接单 & 200 成功 & 200 & ✓ \\
-S06 & 重复接单 & T6 滥用 & 同一骑手再次接单 & 400 拒绝 & 400 & ✓ \\
-S07 & 管理员越权 & T6 越权 & 无登录态访问管理员接口 & 403+审计日志 & 403 & ✓ \\
-S08 & 管理员登录（基线） & — & demo 账号登录 & 200 成功 & 200 & ✓ \\
-S09 & hash-only 审计 & T7 隐私 & 管理员查看消息接口 & 无 content 字段 & 无 content & ✓ \\
-S10 & 篡改检测 & T4 完整性 & 修改 DB 消息密文 & VERIFY\_FAIL & mismatch=1 & ✓ \\
-S11 & 溯源滥用阻断 & T5 追责 & 调用明文关键词溯源 & 403 阻断 & 403 & ✓ \\
+S01 & 未登录创建订单 & T1 伪造 & 无登录态调用创建订单 & 401 拒绝 & 401 & $\checkmark$ \\
+S02 & 伪造 Token & T2 伪造 & 修改 Token 末位字符 & valid=false & valid=false & $\checkmark$ \\
+S03 & 跨用户越权 & T1 越权 & mallory 验证 alice 订单 & 403 拒绝 & 403 & $\checkmark$ \\
+S04 & 未登录接单 & T1 伪造 & 无登录态调用接单 & 401 拒绝 & 401 & $\checkmark$ \\
+S05 & 正常接单（基线） & — & 骑手首次接单 & 200 成功 & 200 & $\checkmark$ \\
+S06 & 重复接单 & T6 滥用 & 同一骑手再次接单 & 400 拒绝 & 400 & $\checkmark$ \\
+S07 & 管理员越权 & T6 越权 & 无登录态访问管理员接口 & 403+审计日志 & 403 & $\checkmark$ \\
+S08 & 管理员登录（基线） & — & demo 账号登录 & 200 成功 & 200 & $\checkmark$ \\
+S09 & hash-only 审计 & T7 隐私 & 管理员查看消息接口 & 无 content 字段 & 无 content & $\checkmark$ \\
+S10 & 篡改检测 & T4 完整性 & 修改 DB 消息密文 & VERIFY\_FAIL & mismatch=1 & $\checkmark$ \\
+S11 & 溯源滥用阻断 & T5 追责 & 调用明文关键词溯源 & 403 阻断 & 403 & $\checkmark$ \\
 \hline
 \end{tabularx}
 \end{table}

@@ -15,12 +15,12 @@
 ]
 
 % 主流水线（竖向）
-\node[pstep]                        (recv)   {① 接收明文消息$M$};
-\node[pside, below=0.45cm of recv]  (enc)    {② SM4-CBC 加密$\to$密文$C$（随机 IV，PKCS7 填充）};
-\node[pside, below=0.45cm of enc]   (hash)   {③ SM3 摘要$\to$$h = \mathrm{SM3}(\mathit{orderID}|\mathit{role}|\mathit{ts}|\mathit{ct})$};
-\node[pstep, below=0.45cm of hash]  (store)  {④ 写入 messages 表（密文$C$+ 摘要$h$+ 元数据）};
-\node[pstep, below=0.45cm of store] (merkle) {⑤ 更新 Merkle Tree，计算新 Root};
-\node[pout,  below=0.45cm of merkle] (bcast)  {⑥ 广播给房间成员};
+\node[pstep]                        (recv)   {\textbf{1.} 接收明文消息$M$};
+\node[pside, below=0.45cm of recv]  (enc)    {\textbf{2.} SM4-CBC 加密$\to$密文$C$（随机 IV，PKCS7 填充）};
+\node[pside, below=0.45cm of enc]   (hash)   {\textbf{3.} SM3 摘要$\to$$h = \mathrm{SM3}(\mathit{orderID}|\mathit{role}|\mathit{ts}|\mathit{ct})$};
+\node[pstep, below=0.45cm of hash]  (store)  {\textbf{4.} 写入 messages 表（密文$C$+ 摘要$h$+ 元数据）};
+\node[pstep, below=0.45cm of store] (merkle) {\textbf{5.} 更新 Merkle Tree，计算新 Root};
+\node[pout,  below=0.45cm of merkle] (bcast)  {\textbf{6.} 广播给房间成员};
 
 % 箭头
 \draw[arr] (recv)   -- (enc);

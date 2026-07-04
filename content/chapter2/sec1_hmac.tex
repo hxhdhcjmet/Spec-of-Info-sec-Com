@@ -1,6 +1,6 @@
 \subsection{HMAC 消息认证码}
 
-HMAC（Hash-based Message Authentication Code）是一种基于密码杂凑函数和共享密钥构造的消息认证码机制，由 Bellare、Canetti 和 Krawczyk 于 1996 年提出，并于 1997 年标准化为 RFC 2104\footnote{Bellare, M., Canetti, R., Krawczyk, H. “Keyed-Hashing for Message Authentication.” RFC 2104, IETF, 1997.}。与单纯的哈希运算不同，HMAC 在计算过程中引入了密钥，因此不仅能够检测消息内容是否被篡改，还能够验证消息是否由持有合法密钥的一方生成。HMAC 通常用于身份认证、接口鉴权、请求防伪造和数据完整性校验等场景。
+HMAC（Hash-based Message Authentication Code）是一种基于密码杂凑函数和共享密钥构造的消息认证码机制，由 Bellare、Canetti 和 Krawczyk 于 1996 年提出，并于 1997 年标准化为 RFC 2104\cite{rfc2104}。与单纯的哈希运算不同，HMAC 在计算过程中引入了密钥，因此不仅能够检测消息内容是否被篡改，还能够验证消息是否由持有合法密钥的一方生成。HMAC 通常用于身份认证、接口鉴权、请求防伪造和数据完整性校验等场景。
 
 设 $H$ 表示密码杂凑函数，$K$ 表示共享密钥，$m$ 表示待认证消息，则 HMAC 的一般形式可以表示为：
 \begin{equation}

@@ -57,11 +57,11 @@
 \node[comp, fill=red!14]     at ( 1.8,-4.40) {溯源操作日志};
 \node[comp, fill=red!14]     at ( 4.6,-4.40) {三端摘要增强};
 
-% 层间箭头（右侧连接线）
-\draw[arr, gray] (5.8, 0.42) -- (5.8,-0.80) node[midway, right, font=\footnotesize]{调用};
-\draw[arr, gray] (5.8,-0.80) -- (5.8,-2.05) node[midway, right, font=\footnotesize]{调用};
-\draw[arr, gray] (5.8,-2.05) -- (5.8,-3.20) node[midway, right, font=\footnotesize]{读写};
-\draw[arr, gray] (5.8,-3.20) -- (5.8,-4.40) node[midway, right, font=\footnotesize]{审计};
+% 层间箭头（右侧连接线，放在背景外侧避免穿过组件）
+\draw[arr, gray] (6.4, 0.42) -- (6.4,-0.80) node[midway, right, font=\footnotesize]{调用};
+\draw[arr, gray] (6.4,-0.80) -- (6.4,-2.05) node[midway, right, font=\footnotesize]{调用};
+\draw[arr, gray] (6.4,-2.05) -- (6.4,-3.20) node[midway, right, font=\footnotesize]{读写};
+\draw[arr, gray] (6.4,-3.20) -- (6.4,-4.40) node[midway, right, font=\footnotesize]{审计};
 
 \end{tikzpicture}
 \caption{FoodShield 系统总体架构分层图}

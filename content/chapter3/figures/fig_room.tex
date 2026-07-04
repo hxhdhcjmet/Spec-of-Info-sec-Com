@@ -40,8 +40,9 @@
 \draw[arr] (server.east) -- (UB.west);
 \draw[arr] (server.east) -- (RB.west);
 
-% 隔离标注
-\draw[red!60!black, thick, dashed] (5.9,-2.0) -- (5.9, 1.0);
+% 隔离标注（避开服务器节点，分两段绘制）
+\draw[red!60!black, thick, dashed] (5.9,-2.0) -- (5.9,-0.75);
+\draw[red!60!black, thick, dashed] (5.9, 0.75) -- (5.9, 1.0);
 \node[font=\footnotesize\itshape, red!60!black] at (5.9,-1.7) {房间隔离};
 
 \end{tikzpicture}

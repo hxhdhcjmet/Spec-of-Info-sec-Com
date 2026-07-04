@@ -60,9 +60,9 @@
 % IV 指向 XOR1
 \draw[arr] (IV.south) -- ++(0,-0.18) -| (x1.north);
 
-% C1 → XOR2, C2 → XOR3（从下方绕行）
-\draw[arr] (C1.south) -- ++(0,-0.25) -- ++(1.0,0) |- (x2.west);
-\draw[arr] (C2.south) -- ++(0,-0.25) -- ++(1.0,0) |- (x3.west);
+% C1 → XOR2, C2 → XOR3（从下方绕行，加大间距避免穿过 Enc 节点）
+\draw[arr] (C1.south) -- ++(0,-0.35) -- ++(1.7,0) |- (x2.west);
+\draw[arr] (C2.south) -- ++(0,-0.35) -- ++(1.7,0) |- (x3.west);
 
 % 省略号
 \node[font=\Large, right=0.5cm of C3] {$\cdots$};
