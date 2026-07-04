@@ -2,183 +2,31 @@
 \appendix
 \section{附录}
 
-\section{GitHub 仓库地址}
+\subsection{源代码仓库}
 
-本项目已开源至 GitHub，仓库地址为：
+本项目已开源至 GitHub\footnote{\url{https://github.com/hxhdhcjmet/FoodShield.git}}，仓库中包含完整的系统源代码、攻击演示脚本、性能测试脚本和说明文档。
 
-\begin{center}
-\url{https://github.com/hxhdhcjmet/FoodShield.git}
-\end{center}
-
-仓库中包含了完整的系统源代码、攻击演示脚本、性能测试脚本和说明文档。读者可以克隆仓库到本地，按照 README 中的说明安装依赖并运行系统。
-
-\section{项目目录结构}
-
-FoodShield 项目采用模块化设计，主要目录结构如下：
+\subsection{项目目录结构}
 
 \begin{verbatim}
 FoodShield/
 |-- project/
-|   |-- crypto/                  # 国密算法、Token、PID、Merkle
-|   |-- database/                # SQLite schema 与访问封装
-|   |-- frontend/                # 用户端、骑手端、管理员端页面
-|   |-- server/                  # Flask 主程序与审计逻辑
-|   |-- tools/
-|   |   |-- attack_demo.py       # 攻击/防御演示脚本
-|   |   |-- performance_benchmark.py
-|   |-- integration_demo.py      # 兼容入口，运行攻击/防御演示
-|-- TODO.md
+|   |-- crypto/           # SM3/SM4/HMAC、PID、Token、Merkle
+|   |-- database/         # SQLite schema 与访问封装
+|   |-- frontend/         # 用户端、骑手端、管理员端页面
+|   |-- server/           # Flask 主程序与审计逻辑
+|   |-- tools/            # attack_demo.py, performance_benchmark.py
+|   `-- integration_demo.py
 |-- requirements.txt
 |-- pyproject.toml
-|-- uv.lock
-|-- foodshield.db                # 本地演示数据库
+`-- foodshield.db
 \end{verbatim}
 
-\section{核心模块说明}
-
-\subsection{国密算法模块（crypto/）}
-
-\begin{itemize}[leftmargin=2em]
-\item \texttt{sm\_utils.py}：SM3 哈希、HMAC-SM3 认证码、SM4-CBC 加解密的兼容封装。
-\item \texttt{pid.py}：基于 HMAC-SM3 的匿名 PID 生成与验证。
-\item \texttt{token\_utils.py}：订单 Token 生成与验证，绑定订单号、PID、时间戳和随机数。
-\item \texttt{merkle.py}：消息哈希组织为 Merkle Tree，计算 Merkle Root 用于日志完整性验证。
-\end{itemize}
-
-\subsection{服务端模块（server/）}
-
-\begin{itemize}[leftmargin=2em]
-\item \texttt{app.py}：Flask 主程序，负责路由、WebSocket 房间管理、会话管理。
-\item \texttt{logger.py}：Merkle 快照生成、完整性验证、异常定位。
-\item \texttt{security\_audit.py}：数据库版安全审计辅助接口。
-\end{itemize}
-
-\subsection{前端页面（frontend/）}
-
-\begin{itemize}[leftmargin=2em]
-\item \texttt{user.html}：用户端页面，注册/登录、创建订单、Token 验证、聊天、订单历史、溯源申请。
-\item \texttt{rider.html}：骑手端页面，骑手注册/登录、订单搜索、接单、匿名聊天、Root 上报、溯源申请。
-\item \texttt{admin.html}：管理员端页面，登录、订单审计、消息哈希查看、Merkle 快照、完整性验证、三端一致性验证、溯源审批。
-\end{itemize}
-
-\section{攻击演示脚本说明}
-
-攻击演示脚本位于 \texttt{project/tools/attack\_demo.py}，运行方式：
+\subsection{运行方式}
 
 \begin{verbatim}
-python -m project.tools.attack_demo
-\end{verbatim}
-
-脚本覆盖以下攻击场景：
-
-\begin{enumerate}[label=\arabic*., leftmargin=2em]
-\item 未登录创建订单被拒
-\item 伪造 Token 验证失败
-\item 其他用户越权验证订单被拒
-\item 未登录骑手接单被拒
-\item 重复接单被拒
-\item 未登录管理员访问审计接口被拒
-\item 管理员端消息接口只返回哈希，不返回 \texttt{content}
-\item 直接篡改数据库消息密文后完整性验证失败
-\item 管理员明文关键词扫描接口被隐私策略阻断
-\end{enumerate}
-
-\section{性能测试脚本说明}
-
-性能测试脚本位于 \texttt{project/tools/performance\_benchmark.py}，运行方式：
-
-\begin{verbatim}
-python -m project.tools.performance_benchmark
-\end{verbatim}
-
-可调参数：
-
-\begin{verbatim}
-python -m project.tools.performance_benchmark --users 20 --orders-per-user 10 --messages-per-order 30
-\end{verbatim}
-
-脚本输出指标包括 Token 生成、Token 验证、SM4 加解密往返、消息写入、Merkle 快照和完整性验证的平均耗时、P95 和最大耗时。
-
-\section{环境配置与启动说明}
-
-\subsection{环境要求}
-
-\begin{itemize}[leftmargin=2em]
-\item Python 3.10+
-\item 现代浏览器：Chrome、Edge 或 Firefox
-\item 推荐使用虚拟环境或 uv
-\end{itemize}
-
-\subsection{安装与启动}
-
-使用 pip：
-
-\begin{verbatim}
-python -m venv .venv
-source .venv/bin/activate
 pip install -r requirements.txt
 python -m project.server.app
 \end{verbatim}
 
-Windows PowerShell 激活命令：
-
-\begin{verbatim}
-.\.venv\Scripts\Activate.ps1
-\end{verbatim}
-
-使用 uv：
-
-\begin{verbatim}
-uv sync
-uv run python -m project.server.app
-\end{verbatim}
-
-启动后访问地址：
-
-\begin{table}[H]
-\centering
-\caption{系统访问地址}
-\label{tab:access-urls}
-\begin{tabular}{ll}
-\toprule
-页面 & 地址 \\
-\midrule
-首页 & \texttt{http://127.0.0.1:5000/} \\
-用户端 & \texttt{http://127.0.0.1:5000/user.html} \\
-骑手端 & \texttt{http://127.0.0.1:5000/rider.html} \\
-管理员端 & \texttt{http://127.0.0.1:5000/admin.html} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{安全配置说明}
-
-竞赛本地演示可使用默认配置。只要仍使用默认密钥或默认管理员密码，服务启动时会打印红色警告。公开网络演示或部署前应设置环境变量：
-
-\begin{verbatim}
-export FOODSHIELD_SECRET_KEY="replace-with-random-session-secret"
-export FOODSHIELD_ADMIN_USERNAME="admin"
-export FOODSHIELD_ADMIN_PASSWORD="replace-with-strong-password"
-export FOODSHIELD_ORDER_KEY="replace-with-order-hmac-key"
-export FOODSHIELD_MASTER_KEY="replace-with-pid-master-key"
-export FOODSHIELD_ORDER_ALIAS_SECRET="replace-with-order-alias-key"
-export FOODSHIELD_SM4_KEY="16-byte-sm4-key"
-\end{verbatim}
-
-\section{推荐演示流程}
-
-\begin{enumerate}[label=\arabic*., leftmargin=2em]
-\item 打开用户端，注册/登录，注意页面不展示 PID。
-\item 创建订单，获得 \texttt{order\_id}、\texttt{timestamp} 和 \texttt{token}。
-\item 验证订单 Token，进入匿名聊天房间。
-\item 打开骑手端，注册或登录骑手账号。
-\item 搜索待接订单，接单并进入同一订单房间。
-\item 用户端和骑手端发送多条消息，观察 Merkle Root 同步。
-\item 两端分别上报本端 Root。
-\item 打开管理员端登录，查看订单列表和消息哈希。
-\item 生成 Merkle 快照并执行完整性验证。
-\item 执行三端 Root 一致性验证。
-\item 用户端或骑手端提交溯源申请，管理员审批后按订单号溯源。
-\item 运行攻击演示脚本，展示伪造 Token、越权、未登录骑手接单拦截、重复接单和篡改检测。
-\item 运行性能测试脚本，收集报告中的性能数据。
-\end{enumerate}
+启动后访问 \texttt{http://127.0.0.1:5000/}，分别打开用户端、骑手端和管理员端页面。

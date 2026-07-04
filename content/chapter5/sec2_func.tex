@@ -13,20 +13,20 @@
 \hline
 \textbf{编号} & \textbf{测试项} & \textbf{输入描述} & \textbf{预期结果} & \textbf{实际} & \textbf{结论} \\
 \hline
-F01 & 用户注册 & 用户名+密码+验证码 & 生成PID & 通过 & ✓ \\
-F02 & PID生成 & 注册后自动 & 前端不展示 & 通过 & ✓ \\
-F03 & 用户登录 & 用户名+密码 & SM3验证通过 & 通过 & ✓ \\
-F04 & 创建订单 & 登录用户 & 生成orderID+Token & 通过 & ✓ \\
-F05 & Token验证 & 合法Token & valid=true & 通过 & ✓ \\
-F06 & Token过期 & 超时时间戳 & valid=false & 通过 & ✓ \\
-F07 & 骑手注册 & 骑手信息 & 生成rider\_pid & 通过 & ✓ \\
-F08 & 骑手接单列表 & 骑手登录 & 不展示PID & 通过 & ✓ \\
-F09 & 骑手接单 & 骑手+orderID & 状态变更 & 通过 & ✓ \\
-F10 & 实时通信 & 同订单房间 & 消息收发 & 通过 & ✓ \\
-F11 & 加密存储 & 发送消息 & content为密文 & 通过 & ✓ \\
-F12 & Merkle快照 & 管理员触发 & Root入审计日志 & 通过 & ✓ \\
-F13 & 条件溯源 & 用户申请+审批 & 返回用户信息 & 通过 & ✓ \\
-F14 & 三端一致性 & 管理员验证 & 三方Root一致 & 通过 & ✓ \\
+F01 & 用户注册 & 用户名+密码+验证码 & 生成PID & 通过 & $\checkmark$ \\
+F02 & PID生成 & 注册后自动 & 前端不展示 & 通过 & $\checkmark$ \\
+F03 & 用户登录 & 用户名+密码 & SM3验证通过 & 通过 & $\checkmark$ \\
+F04 & 创建订单 & 登录用户 & 生成orderID+Token & 通过 & $\checkmark$ \\
+F05 & Token验证 & 合法Token & valid=true & 通过 & $\checkmark$ \\
+F06 & Token过期 & 超时时间戳 & valid=false & 通过 & $\checkmark$ \\
+F07 & 骑手注册 & 骑手信息 & 生成rider\_pid & 通过 & $\checkmark$ \\
+F08 & 骑手接单列表 & 骑手登录 & 不展示PID & 通过 & $\checkmark$ \\
+F09 & 骑手接单 & 骑手+orderID & 状态变更 & 通过 & $\checkmark$ \\
+F10 & 实时通信 & 同订单房间 & 消息收发 & 通过 & $\checkmark$ \\
+F11 & 加密存储 & 发送消息 & content为密文 & 通过 & $\checkmark$ \\
+F12 & Merkle快照 & 管理员触发 & Root入审计日志 & 通过 & $\checkmark$ \\
+F13 & 条件溯源 & 用户申请+审批 & 返回用户信息 & 通过 & $\checkmark$ \\
+F14 & 三端一致性 & 管理员验证 & 三方Root一致 & 通过 & $\checkmark$ \\
 \hline
 \end{tabular}
 \end{table}

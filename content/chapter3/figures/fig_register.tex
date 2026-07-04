@@ -38,8 +38,8 @@
 \draw[arr] (db)   -- (done);
 
 % 返回箭头：绕过 decision 节点（从 reject 右侧绕行回 captcha）
-\draw[arr] (r_cap.north) -- ++(0,0.35) -| ([xshift=0.15cm]captcha.east);
-\draw[arr] (r_dup.north) -- ++(0,0.4) -| ([xshift=-0.1cm]captcha.east);
+\draw[arr] (r_cap.north) -- ++(0,0.5) -| ([xshift=0.15cm]captcha.east);
+\draw[arr] (r_dup.east) -- ++(0.5,0) |- ([xshift=-0.1cm]captcha.east);
 
 \end{tikzpicture}
 \caption{用户注册流程图}

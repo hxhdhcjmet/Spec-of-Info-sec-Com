@@ -19,8 +19,8 @@
 % ==================== 标题格式 ====================
 \titleformat{\section}
   {\centering\heiti\bfseries\zihao{3}}
-  {}
-  {0em}
+  {\thesection}
+  {1em}
   {}
 
 \titleformat{\subsection}
@@ -68,7 +68,6 @@
 % ==================== 中文章节编号：ctex 官方方式 ====================
 \ctexset{
   section = {
-    name = {第,章},
     number = \chinese{section},
     format = \centering\heiti\bfseries\zihao{3}
   },
